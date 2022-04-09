@@ -1,0 +1,23 @@
+<resources  xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.MyStyle" parent="Theme.Design.Light.NoActionBar">
+
+        <item name="colorPrimary">@color/black</item>
+        <item name="colorPrimaryVariant">@color/black</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/light_gray</item>
+        <item name="colorSecondaryVariant">@color/light_gray</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <item name="android:background">@color/white</item>
+
+
+    </style>
+    <style name="ChessTileBlack" parent="Widget.AppCompat.Button">
+        <item name="android:background">@color/light_gray</item>
+    </style>
+    <style name="ChessTileWhite" parent="Widget.AppCompat.Button">
+        <item name="android:background">@color/white</item>
+    </style>
+</resources>

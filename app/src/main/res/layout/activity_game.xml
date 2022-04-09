@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GameActivity">
+
+    <Button
+        android:id="@+id/t72"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t62"
+        app:layout_constraintStart_toEndOf="@+id/t71" />
+
+    <Button
+        android:id="@+id/t47"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t37"
+        app:layout_constraintStart_toEndOf="@+id/t46" />
+
+    <Button
+        android:id="@+id/t70"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t60"
+        app:layout_constraintEnd_toEndOf="@+id/t60"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="@+id/t60" />
+
+    <Button
+        android:id="@+id/t77"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t67"
+        app:layout_constraintStart_toEndOf="@+id/t76" />
+
+    <Button
+        android:id="@+id/t73"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t63"
+        app:layout_constraintStart_toEndOf="@+id/t72" />
+
+    <Button
+        android:id="@+id/t76"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t66"
+        app:layout_constraintStart_toEndOf="@+id/t75" />
+
+    <Button
+        android:id="@+id/t63"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t53"
+        app:layout_constraintStart_toEndOf="@+id/t62" />
+
+    <Button
+        android:id="@+id/t56"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t46"
+        app:layout_constraintStart_toEndOf="@+id/t55" />
+
+    <Button
+        android:id="@+id/t62"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t52"
+        app:layout_constraintStart_toEndOf="@+id/t61" />
+
+    <Button
+        android:id="@+id/t55"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t45"
+        app:layout_constraintStart_toEndOf="@+id/t54" />
+
+    <Button
+        android:id="@+id/t65"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t55"
+        app:layout_constraintStart_toEndOf="@+id/t64" />
+
+    <Button
+        android:id="@+id/t44"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t34"
+        app:layout_constraintStart_toEndOf="@+id/t43" />
+
+    <Button
+        android:id="@+id/t41"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t31"
+        app:layout_constraintStart_toEndOf="@+id/t40" />
+
+    <Button
+        android:id="@+id/t43"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t33"
+        app:layout_constraintStart_toEndOf="@+id/t42" />
+
+    <Button
+        android:id="@+id/t71"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t61"
+        app:layout_constraintStart_toEndOf="@+id/t70" />
+
+    <Button
+        android:id="@+id/t60"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t50"
+        app:layout_constraintEnd_toEndOf="@+id/t50"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="@+id/t50" />
+
+    <Button
+        android:id="@+id/t45"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t35"
+        app:layout_constraintStart_toEndOf="@+id/t44" />
+
+    <Button
+        android:id="@+id/t64"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t54"
+        app:layout_constraintStart_toEndOf="@+id/t63" />
+
+    <Button
+        android:id="@+id/t50"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t40"
+        app:layout_constraintEnd_toEndOf="@+id/t40"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="@+id/t40" />
+
+    <Button
+        android:id="@+id/t75"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t65"
+        app:layout_constraintStart_toEndOf="@+id/t74" />
+
+    <Button
+        android:id="@+id/t54"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t44"
+        app:layout_constraintStart_toEndOf="@+id/t53" />
+
+    <Button
+        android:id="@+id/t51"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t41"
+        app:layout_constraintStart_toEndOf="@+id/t50" />
+
+    <Button
+        android:id="@+id/t67"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t57"
+        app:layout_constraintStart_toEndOf="@+id/t66" />
+
+    <Button
+        android:id="@+id/t53"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t43"
+        app:layout_constraintStart_toEndOf="@+id/t52" />
+
+    <Button
+        android:id="@+id/t52"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t42"
+        app:layout_constraintStart_toEndOf="@+id/t51" />
+
+    <Button
+        android:id="@+id/t61"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t51"
+        app:layout_constraintStart_toEndOf="@+id/t60" />
+
+    <Button
+        android:id="@+id/t57"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t47"
+        app:layout_constraintStart_toEndOf="@+id/t56" />
+
+    <Button
+        android:id="@+id/t40"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t30"
+        app:layout_constraintEnd_toEndOf="@+id/t30"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="@+id/t30" />
+
+    <Button
+        android:id="@+id/t46"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t36"
+        app:layout_constraintStart_toEndOf="@+id/t45" />
+
+    <Button
+        android:id="@+id/t66"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t56"
+        app:layout_constraintStart_toEndOf="@+id/t65" />
+
+    <Button
+        android:id="@+id/t74"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t64"
+        app:layout_constraintStart_toEndOf="@+id/t73" />
+
+    <Button
+        android:id="@+id/t42"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t32"
+        app:layout_constraintStart_toEndOf="@+id/t41" />
+
+    <Button
+        android:id="@+id/t30"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t20"
+        app:layout_constraintEnd_toEndOf="@+id/t20"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="@+id/t20" />
+
+    <Button
+        android:id="@+id/t27"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t17"
+        app:layout_constraintStart_toEndOf="@+id/t06" />
+
+    <Button
+        android:id="@+id/t34"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t24"
+        app:layout_constraintStart_toEndOf="@+id/t33" />
+
+    <Button
+        android:id="@+id/t31"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t21"
+        app:layout_constraintStart_toEndOf="@+id/t30" />
+
+    <Button
+        android:id="@+id/t33"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t23"
+        app:layout_constraintStart_toEndOf="@+id/t32" />
+
+    <Button
+        android:id="@+id/t32"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t22"
+        app:layout_constraintStart_toEndOf="@+id/t31" />
+
+    <Button
+        android:id="@+id/t36"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t26"
+        app:layout_constraintStart_toEndOf="@+id/t35" />
+
+    <Button
+        android:id="@+id/t35"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t25"
+        app:layout_constraintStart_toEndOf="@+id/t34" />
+
+    <Button
+        android:id="@+id/t37"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t27"
+        app:layout_constraintStart_toEndOf="@+id/t36" />
+
+    <Button
+        android:id="@+id/t20"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t10"
+        app:layout_constraintEnd_toEndOf="@+id/t10"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="@+id/t10" />
+
+    <Button
+        android:id="@+id/t24"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t14"
+        app:layout_constraintStart_toEndOf="@+id/t23" />
+
+    <Button
+        android:id="@+id/t21"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t11"
+        app:layout_constraintStart_toEndOf="@+id/t20" />
+
+    <Button
+        android:id="@+id/t23"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t13"
+        app:layout_constraintStart_toEndOf="@+id/t22" />
+
+    <Button
+        android:id="@+id/t22"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t12"
+        app:layout_constraintStart_toEndOf="@+id/t21" />
+
+    <Button
+        android:id="@+id/t26"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t16"
+        app:layout_constraintStart_toEndOf="@+id/t25" />
+
+    <Button
+        android:id="@+id/t25"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t15"
+        app:layout_constraintStart_toEndOf="@+id/t24" />
+
+    <Button
+        android:id="@+id/t10"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t00"
+        app:layout_constraintEnd_toEndOf="@+id/t00"
+        app:layout_constraintHorizontal_bias="0.079"
+        app:layout_constraintStart_toStartOf="@+id/t00" />
+
+    <Button
+        android:id="@+id/t11"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t01"
+        app:layout_constraintStart_toEndOf="@+id/t10" />
+
+    <Button
+        android:id="@+id/t14"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t04"
+        app:layout_constraintStart_toEndOf="@+id/t13" />
+
+    <Button
+        android:id="@+id/t13"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t03"
+        app:layout_constraintStart_toEndOf="@+id/t12" />
+
+    <Button
+        android:id="@+id/t12"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t02"
+        app:layout_constraintStart_toEndOf="@+id/t11" />
+
+    <Button
+        android:id="@+id/t16"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t06"
+        app:layout_constraintStart_toEndOf="@+id/t15" />
+
+    <Button
+        android:id="@+id/t15"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t05"
+        app:layout_constraintStart_toEndOf="@+id/t14" />
+
+    <Button
+        android:id="@+id/t17"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toTopOf="@+id/t07"
+        app:layout_constraintStart_toEndOf="@+id/t16" />
+
+    <Button
+        android:id="@+id/t00"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.043"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.599" />
+
+    <Button
+        android:id="@+id/t01"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/t00"
+        app:layout_constraintStart_toEndOf="@+id/t00" />
+
+    <Button
+        android:id="@+id/t04"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/t03"
+        app:layout_constraintStart_toEndOf="@+id/t03" />
+
+    <Button
+        android:id="@+id/t03"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/t02"
+        app:layout_constraintStart_toEndOf="@+id/t02" />
+
+    <Button
+        android:id="@+id/t02"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/t01"
+        app:layout_constraintStart_toEndOf="@+id/t01" />
+
+    <Button
+        android:id="@+id/t06"
+        style="@style/ChessTileBlack"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/t05"
+        app:layout_constraintStart_toEndOf="@+id/t05" />
+
+    <Button
+        android:id="@+id/t05"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/t04"
+        app:layout_constraintStart_toEndOf="@+id/t04" />
+
+    <Button
+        android:id="@+id/t07"
+        style="@style/ChessTileWhite"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        app:layout_constraintBottom_toBottomOf="@+id/t06"
+        app:layout_constraintStart_toEndOf="@+id/t06" />
+
+    <Button
+        android:id="@+id/undoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="undo"
+        android:textColor="@color/black"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        style="@style/BorderlessNoBackground"
+        tools:layout_editor_absoluteX="34dp"
+        tools:layout_editor_absoluteY="610dp" />
+
+    <TextView
+        android:id="@+id/moveDisplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="36sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/t70"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.096"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
