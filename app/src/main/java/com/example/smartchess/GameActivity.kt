@@ -38,7 +38,7 @@ class GameActivity : AppCompatActivity() {
                     if (lastMove.takingMove) {
                         lastMove.takenPiece!!.tile.piece = lastMove.takenPiece
                     }
-                    lastMove.piece.deselectPossibleMoves()
+                    lastMove.piece.deselectPossibleMoves(true)
                 }
                 updateMoveDisplay()
             }
@@ -107,42 +107,42 @@ class GameActivity : AppCompatActivity() {
         val isWhite = !(intent.extras?.get("Colour") as Boolean)
         if (isWhite) {
             board[0][0].piece =
-                Rook(R.drawable.white_rook, board[0][0], board, true, moveStack, true)
+                Rook(R.drawable.white_rook, board[0][0], board, true, moveStack)
             board[0][7].piece =
-                Rook(R.drawable.white_rook, board[0][7], board, true, moveStack, true)
+                Rook(R.drawable.white_rook, board[0][7], board, true, moveStack)
             board[0][1].piece =
-                Knight(R.drawable.white_knight, board[0][1], board, true, moveStack, true)
+                Knight(R.drawable.white_knight, board[0][1], board, true, moveStack)
             board[0][6].piece =
-                Knight(R.drawable.white_knight, board[0][6], board, true, moveStack, true)
+                Knight(R.drawable.white_knight, board[0][6], board, true, moveStack)
             board[0][2].piece =
-                Bishop(R.drawable.white_bishop, board[0][2], board, true, moveStack, true)
+                Bishop(R.drawable.white_bishop, board[0][2], board, true, moveStack)
             board[0][5].piece =
-                Bishop(R.drawable.white_bishop, board[0][5], board, true, moveStack, true)
+                Bishop(R.drawable.white_bishop, board[0][5], board, true, moveStack)
             board[0][3].piece =
-                Bishop(R.drawable.white_queen, board[0][2], board, true, moveStack, true)
+                Queen(R.drawable.white_queen, board[0][3], board, true, moveStack)
             board[0][4].piece =
-                Bishop(R.drawable.white_king, board[0][2], board, true, moveStack, true)
+                King(R.drawable.white_king, board[0][4], board, true, moveStack)
             for (t in board[1]) {
-                t.piece = Pawn(R.drawable.white_pawn, t, board, true, moveStack, true)
+                t.piece = Pawn(R.drawable.white_pawn, t, board, true, moveStack)
             }
             board[7][0].piece =
-                Rook(R.drawable.black_rook, board[7][0], board, false, moveStack, false)
+                Rook(R.drawable.black_rook, board[7][0], board, false, moveStack)
             board[7][7].piece =
-                Rook(R.drawable.black_rook, board[7][7], board, false, moveStack, false)
+                Rook(R.drawable.black_rook, board[7][7], board, false, moveStack)
             board[7][1].piece =
-                Knight(R.drawable.black_knight, board[7][1], board, false, moveStack, false)
+                Knight(R.drawable.black_knight, board[7][1], board, false, moveStack)
             board[7][6].piece =
-                Knight(R.drawable.black_knight, board[7][6], board, false, moveStack, false)
+                Knight(R.drawable.black_knight, board[7][6], board, false, moveStack)
             board[7][2].piece =
-                Bishop(R.drawable.black_bishop, board[7][2], board, false, moveStack, false)
+                Bishop(R.drawable.black_bishop, board[7][2], board, false, moveStack)
             board[7][5].piece =
-                Bishop(R.drawable.black_bishop, board[7][5], board, false, moveStack, false)
+                Bishop(R.drawable.black_bishop, board[7][5], board, false, moveStack)
             board[7][3].piece =
-                Bishop(R.drawable.black_queen, board[7][2], board, false, moveStack, false)
+                Queen(R.drawable.black_queen, board[7][3], board, false, moveStack)
             board[7][4].piece =
-                Bishop(R.drawable.black_king, board[7][2], board, false, moveStack, false)
+                King(R.drawable.black_king, board[7][4], board, false, moveStack)
             for (t in board[6]) {
-                t.piece = Pawn(R.drawable.black_pawn, t, board, false, moveStack, false)
+                t.piece = Pawn(R.drawable.black_pawn, t, board, false, moveStack)
             }
             for (t in board[0]) t.update()
             for (t in board[1]) t.update()
@@ -151,42 +151,42 @@ class GameActivity : AppCompatActivity() {
         } else {
 
             board[7][0].piece =
-                Rook(R.drawable.white_rook, board[7][0], board, false, moveStack, true)
+                Rook(R.drawable.white_rook, board[7][0], board, false, moveStack)
             board[7][7].piece =
-                Rook(R.drawable.white_rook, board[7][7], board, false, moveStack, true)
+                Rook(R.drawable.white_rook, board[7][7], board, false, moveStack)
             board[7][1].piece =
-                Knight(R.drawable.white_knight, board[7][1], board, false, moveStack, true)
+                Knight(R.drawable.white_knight, board[7][1], board, false, moveStack)
             board[7][6].piece =
-                Knight(R.drawable.white_knight, board[7][6], board, false, moveStack, true)
+                Knight(R.drawable.white_knight, board[7][6], board, false, moveStack)
             board[7][2].piece =
-                Bishop(R.drawable.white_bishop, board[7][2], board, false, moveStack, true)
+                Bishop(R.drawable.white_bishop, board[7][2], board, false, moveStack)
             board[7][5].piece =
-                Bishop(R.drawable.white_bishop, board[7][5], board, false, moveStack, true)
+                Bishop(R.drawable.white_bishop, board[7][5], board, false, moveStack)
             board[7][3].piece =
-                Bishop(R.drawable.white_queen, board[7][2], board, false, moveStack, true)
+                Queen(R.drawable.white_queen, board[7][3], board, false, moveStack)
             board[7][4].piece =
-                Bishop(R.drawable.white_king, board[7][2], board, false, moveStack, true)
+                King(R.drawable.white_king, board[7][4], board, false, moveStack)
             for (t in board[6]) {
-                t.piece = Pawn(R.drawable.white_pawn, t, board, false, moveStack, true)
+                t.piece = Pawn(R.drawable.white_pawn, t, board, false, moveStack)
             }
             board[0][0].piece =
-                Rook(R.drawable.black_rook, board[0][0], board, true, moveStack, false)
+                Rook(R.drawable.black_rook, board[0][0], board, true, moveStack)
             board[0][7].piece =
-                Rook(R.drawable.black_rook, board[0][7], board, true, moveStack, false)
+                Rook(R.drawable.black_rook, board[0][7], board, true, moveStack)
             board[0][1].piece =
-                Knight(R.drawable.black_knight, board[0][1], board, true, moveStack, false)
+                Knight(R.drawable.black_knight, board[0][1], board, true, moveStack)
             board[0][6].piece =
-                Knight(R.drawable.black_knight, board[0][6], board, true, moveStack, false)
+                Knight(R.drawable.black_knight, board[0][6], board, true, moveStack)
             board[0][2].piece =
-                Bishop(R.drawable.black_bishop, board[0][2], board, true, moveStack, false)
+                Bishop(R.drawable.black_bishop, board[0][2], board, true, moveStack)
             board[0][5].piece =
-                Bishop(R.drawable.black_bishop, board[0][5], board, true, moveStack, false)
+                Bishop(R.drawable.black_bishop, board[0][5], board, true, moveStack)
             board[0][3].piece =
-                Bishop(R.drawable.black_queen, board[0][2], board, true, moveStack, false)
+                Queen(R.drawable.black_queen, board[0][3], board, true, moveStack)
             board[0][4].piece =
-                Bishop(R.drawable.black_king, board[0][2], board, true, moveStack, false)
+                King(R.drawable.black_king, board[0][4], board, true, moveStack)
             for (t in board[1]) {
-                t.piece = Pawn(R.drawable.black_pawn, t, board, true, moveStack, false)
+                t.piece = Pawn(R.drawable.black_pawn, t, board, true, moveStack)
             }
             for (t in board[0]) t.update()
             for (t in board[1]) t.update()
@@ -223,7 +223,7 @@ class GameActivity : AppCompatActivity() {
                                         selected = tile
                                         selected!!.update()
                                     }
-                                } else if (moveStack?.peek().piece.playerControlled != tile.piece!!.playerControlled) {
+                                } else if (moveStack.peek().piece.playerControlled != tile.piece!!.playerControlled) {
                                     tile.select()
                                     selected = tile
                                     selected!!.update()
@@ -236,8 +236,7 @@ class GameActivity : AppCompatActivity() {
                                 selected!!.deselect()
                                 selected = null
                                 updateMoveDisplay()
-                            }
-                            else{
+                            } else {
                                 selected!!.deselect()
                                 selected = null
                             }
@@ -341,7 +340,7 @@ class GameActivity : AppCompatActivity() {
         var possibleMove = false
         fun deselect() {
             selected = false
-            piece?.deselectPossibleMoves()
+            piece?.deselectPossibleMoves(true)
         }
 
         fun select() {
@@ -387,7 +386,7 @@ class GameActivity : AppCompatActivity() {
         val startTile: Tile,
         val piece: Piece,
         val newTile: Tile,
-        val stringRep: String
+        var stringRep: String
     ) {
         var takingMove = false
         var takenPiece: Piece? = null
@@ -402,8 +401,5 @@ class GameActivity : AppCompatActivity() {
             this.takingMove = true
             this.takenPiece = takenPiece
         }
-
     }
-
-
 }
