@@ -3,7 +3,9 @@ package com.example.smartchess
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.TextView
 import java.util.*
 import kotlin.math.abs
@@ -13,9 +15,21 @@ class GameActivity : AppCompatActivity() {
     val moveStack = Stack<Move>()
     lateinit var moveDisplay: TextView
     var selected: Tile? = null
+    lateinit var promotionSelector : Spinner
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
+        promotionSelector = findViewById(R.id.promotionSpinner)
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.pieces,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            // Specify the layout to use when the list of choices appears
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            // Apply the adapter to the spinner
+            promotionSelector.adapter = adapter
+        }
         moveDisplay = findViewById(R.id.moveDisplay)
         moveDisplay.text = "Previous moves: "
         val undoButton = findViewById<Button>(R.id.undoButton)
@@ -44,7 +58,6 @@ class GameActivity : AppCompatActivity() {
             }
         }
         assignTiles()
-        colourPlacement()
         placePieces()
         assignClickListener()
     }
@@ -58,48 +71,6 @@ class GameActivity : AppCompatActivity() {
         }
         while (!stack.isEmpty()) {
             moveStack.push(stack.pop())
-        }
-    }
-
-    fun colourPlacement() {
-        val isWhite = !(intent.extras?.get("Colour") as Boolean)
-        var oddLine = true
-        var oddTile = true
-        for (line in board) {
-            for (t in line) {
-                if (oddLine) {
-                    if (oddTile) {
-                        if (isWhite) {
-                            t.button.setBackgroundResource(R.drawable.gray_background)
-                        } else {
-                            t.button.setBackgroundResource(R.drawable.white_background)
-                        }
-                    } else {
-                        if (isWhite) {
-                            t.button.setBackgroundResource(R.drawable.white_background)
-                        } else {
-                            t.button.setBackgroundResource(R.drawable.gray_background)
-                        }
-                    }
-                } else {
-                    if (oddTile) {
-                        if (isWhite) {
-                            t.button.setBackgroundResource(R.drawable.white_background)
-                        } else {
-                            t.button.setBackgroundResource(R.drawable.gray_background)
-                        }
-                    } else {
-                        if (isWhite) {
-                            t.button.setBackgroundResource(R.drawable.gray_background)
-                        } else {
-                            t.button.setBackgroundResource(R.drawable.white_background)
-                        }
-                    }
-                }
-                oddTile = !oddTile
-            }
-            oddLine = !oddLine
-            oddTile = true
         }
     }
 
@@ -123,7 +94,7 @@ class GameActivity : AppCompatActivity() {
             board[0][4].piece =
                 King(R.drawable.white_king, board[0][4], board, true, moveStack)
             for (t in board[1]) {
-                t.piece = Pawn(R.drawable.white_pawn, t, board, true, moveStack)
+                t.piece = Pawn(R.drawable.white_pawn, t, board, true, moveStack,promotionSelector)
             }
             board[7][0].piece =
                 Rook(R.drawable.black_rook, board[7][0], board, false, moveStack)
@@ -142,7 +113,7 @@ class GameActivity : AppCompatActivity() {
             board[7][4].piece =
                 King(R.drawable.black_king, board[7][4], board, false, moveStack)
             for (t in board[6]) {
-                t.piece = Pawn(R.drawable.black_pawn, t, board, false, moveStack)
+                t.piece = Pawn(R.drawable.black_pawn, t, board, false, moveStack,promotionSelector)
             }
             for (t in board[0]) t.update()
             for (t in board[1]) t.update()
@@ -162,12 +133,12 @@ class GameActivity : AppCompatActivity() {
                 Bishop(R.drawable.white_bishop, board[7][2], board, false, moveStack)
             board[7][5].piece =
                 Bishop(R.drawable.white_bishop, board[7][5], board, false, moveStack)
-            board[7][3].piece =
-                Queen(R.drawable.white_queen, board[7][3], board, false, moveStack)
             board[7][4].piece =
-                King(R.drawable.white_king, board[7][4], board, false, moveStack)
+                Queen(R.drawable.white_queen, board[7][4], board, false, moveStack)
+            board[7][3].piece =
+                King(R.drawable.white_king, board[7][3], board, false, moveStack)
             for (t in board[6]) {
-                t.piece = Pawn(R.drawable.white_pawn, t, board, false, moveStack)
+                t.piece = Pawn(R.drawable.white_pawn, t, board, false, moveStack,promotionSelector)
             }
             board[0][0].piece =
                 Rook(R.drawable.black_rook, board[0][0], board, true, moveStack)
@@ -181,12 +152,12 @@ class GameActivity : AppCompatActivity() {
                 Bishop(R.drawable.black_bishop, board[0][2], board, true, moveStack)
             board[0][5].piece =
                 Bishop(R.drawable.black_bishop, board[0][5], board, true, moveStack)
-            board[0][3].piece =
-                Queen(R.drawable.black_queen, board[0][3], board, true, moveStack)
             board[0][4].piece =
-                King(R.drawable.black_king, board[0][4], board, true, moveStack)
+                Queen(R.drawable.black_queen, board[0][4], board, true, moveStack)
+            board[0][3].piece =
+                King(R.drawable.black_king, board[0][3], board, true, moveStack)
             for (t in board[1]) {
-                t.piece = Pawn(R.drawable.black_pawn, t, board, true, moveStack)
+                t.piece = Pawn(R.drawable.black_pawn, t, board, true, moveStack,promotionSelector)
             }
             for (t in board[0]) t.update()
             for (t in board[1]) t.update()

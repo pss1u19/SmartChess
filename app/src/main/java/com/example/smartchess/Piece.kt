@@ -1,8 +1,7 @@
 package com.example.smartchess
 
+import android.widget.Spinner
 import java.lang.Exception
-import java.lang.Integer.max
-import java.lang.Integer.min
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.abs
@@ -16,11 +15,11 @@ abstract class Piece(
 ) {
     abstract fun move(t: GameActivity.Tile)
     abstract fun select()
-    fun deselectPossibleMoves(update:Boolean) {
+    fun deselectPossibleMoves(update: Boolean) {
         for (line in board) {
             for (t in line) {
                 t.possibleMove = false
-                if(update)t.update()
+                if (update) t.update()
             }
         }
     }
@@ -52,20 +51,70 @@ abstract class Piece(
         }
         return alliedPiecesArray
     }
-    fun checkForControl(tile:GameActivity.Tile):Boolean{
+
+    fun checkForControl(tile: GameActivity.Tile): Boolean {
         val p = tile.piece
         tile.piece = this
-        for(enemyPiece in getEnemyPieces()){
-            enemyPiece.select()
-            if(tile.possibleMove){
-                enemyPiece.deselectPossibleMoves(false)
-                tile.piece=p
+        for (enemyPiece in getEnemyPieces()) {
+            if (enemyPiece !is King) {
+                enemyPiece.select()
+            } else {
+                val x = enemyPiece.tile.x
+                val y = enemyPiece.tile.y
+                if (x < 7 && y < 7) {
+                    if (board[y + 1][x + 1].piece == null || board[y + 1][x + 1].piece?.playerControlled != enemyPiece.playerControlled) {
+                        board[y + 1][x + 1].possibleMove = true
+                    }
+                }
+                if (y < 7 && x > 0) {
+                    if (board[y + 1][x - 1].piece == null || board[y + 1][x - 1].piece?.playerControlled != enemyPiece.playerControlled) {
+                        board[y + 1][x - 1].possibleMove = true
+                    }
+                }
+                if (y < 7) {
+                    if (board[y + 1][x].piece == null || board[y + 1][x].piece?.playerControlled != enemyPiece.playerControlled) {
+                        board[y + 1][x].possibleMove = true
+                    }
+                }
+                if (x < 7) {
+                    if (board[y][x + 1].piece == null || board[y][x + 1].piece?.playerControlled != enemyPiece.playerControlled) {
+                        board[y][x + 1].possibleMove = true
+                    }
+                }
+                if (x > 0) {
+                    if (board[y][x - 1].piece == null || board[y][x - 1].piece?.playerControlled != enemyPiece.playerControlled) {
+                        board[y][x - 1].possibleMove = true
+                    }
+                }
+                if (y > 0 && x > 0) {
+                    if (board[y - 1][x - 1].piece == null || board[y - 1][x - 1].piece?.playerControlled != enemyPiece.playerControlled) {
+                        board[y - 1][x - 1].possibleMove = true
+                    }
+                }
+                if (y > 0 && x < 7) {
+                    if (board[y - 1][x + 1].piece == null || board[y - 1][x + 1].piece?.playerControlled != enemyPiece.playerControlled) {
+                        board[y - 1][x + 1].possibleMove = true
+                    }
+                }
+                if (y > 0) {
+                    if (board[y - 1][x].piece == null || board[y - 1][x].piece?.playerControlled != enemyPiece.playerControlled) {
+                        board[y - 1][x].possibleMove = true
+                    }
+                }
+
+            }
+            if (tile.possibleMove) {
+                tile.piece = p
+                enemyPiece.deselectPossibleMoves(true)
                 return true
             }
+            enemyPiece.deselectPossibleMoves(true)
         }
         tile.piece = p
+        this.deselectPossibleMoves(true)
         return false
     }
+
     fun checkForCheck(allied: Boolean): Boolean {
         var king: King? = null
         if (allied) {
@@ -112,6 +161,7 @@ class Pawn(
     board: Array<Array<GameActivity.Tile>>,
     playerControlled: Boolean,
     moveStack: Stack<GameActivity.Move>,
+    val promotionSpinner: Spinner
 ) :
     Piece(
         graphic, tile, board,
@@ -178,11 +228,54 @@ class Pawn(
         //if(checkForCheck(false)){
         //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
         //}
+
         tile.deselect()
         t.piece = this
         this.tile.piece = null
         this.tile = t
         hasMoved = true
+
+        if ((t.y == 7 && playerControlled) || (t.y == 0 && !playerControlled)) {
+            val p = promotionSpinner.selectedItem.toString()
+            when (p) {
+                "Queen" -> {
+                    if (this.graphic == R.drawable.white_pawn) {
+                        t.piece =
+                            Queen(R.drawable.white_queen, t, board, playerControlled, moveStack)
+                    } else {
+                        t.piece =
+                            Queen(R.drawable.black_queen, t, board, playerControlled, moveStack)
+                    }
+                }
+                "Bishop" -> {
+                    if (this.graphic == R.drawable.white_pawn) {
+                        t.piece =
+                            Bishop(R.drawable.white_bishop, t, board, playerControlled, moveStack)
+                    } else {
+                        t.piece =
+                            Bishop(R.drawable.black_bishop, t, board, playerControlled, moveStack)
+                    }
+                }
+                "Knight" -> {
+                    if (this.graphic == R.drawable.white_pawn) {
+                        t.piece =
+                            Knight(R.drawable.white_knight, t, board, playerControlled, moveStack)
+                    } else {
+                        t.piece =
+                            Knight(R.drawable.black_knight, t, board, playerControlled, moveStack)
+                    }
+                }
+                "Rook" -> {
+                    if(this.graphic == R.drawable.white_pawn){
+                        t.piece = Rook(R.drawable.white_rook,t,board,playerControlled,moveStack)
+                    }
+                    else{
+                        t.piece = Rook(R.drawable.black_rook,t,board,playerControlled,moveStack)
+                    }
+                }
+            }
+            moveStack.peek().stringRep = moveStack.peek().stringRep+"="+ t.piece!!.getChar()
+        }
         deselectPossibleMoves(true)
     }
 
@@ -214,8 +307,6 @@ class Pawn(
             val lastMove = moveStack.peek()
             if (lastMove.piece is Pawn && abs(lastMove.newTile.x - x) == 1 && abs(lastMove.newTile.y - lastMove.startTile.y) == 2) {
                 val pawn = lastMove.piece
-                println(y == 5)
-                println(playerControlled)
                 if ((y == 4 && playerControlled) || (y == 3 && !playerControlled)) {
                     board[y + d][pawn.tile.x].possibleMove = true
                     board[y + d][pawn.tile.x].update()
@@ -293,11 +384,8 @@ class Bishop(
         val y = tile.y
         for (i in 1..6) {
             try {
-                println("a")
                 if (board[y + i][x + i].piece != null) {
-                    println("b")
                     if (board[y + i][x + i].piece!!.playerControlled != playerControlled) {
-                        println("c")
                         board[y + i][x + i].possibleMove = true
                         board[y + i][x + i].update()
                         break
@@ -496,12 +584,162 @@ class King(
         graphic, tile, board,
         playerControlled, moveStack
     ) {
+    var hasMoved = false
     override fun move(t: GameActivity.Tile) {
-        //TODO("Not yet implemented")
+        val x = tile.x
+        val y = tile.y
+        if(t.x-x == 2){
+            if(7-x == 3){
+                moveStack.push(GameActivity.Move(this.tile,this,board[y][7].piece!!,t,"0-0"))
+                t.piece = this
+                this.tile.piece = null
+                this.tile = t
+                board[y][7].piece!!.tile = board[y][x+1]
+                board[y][x+1].piece = board[y][7].piece
+                board[y][7].piece = null
+            }
+
+        }
+
+        if (t.piece != null) {
+
+            moveStack.push(
+                GameActivity.Move(
+                    tile,
+                    this,
+                    t.piece!!,
+                    t,
+                    "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
+                )
+            )
+        } else {
+            moveStack.push(
+                GameActivity.Move(
+                    tile,
+                    this,
+                    t,
+                    "" + this.getChar() + 'a'.plus(t.x) + (t.y + 1).toString()
+                )
+            )
+        }
+
+        //if(checkForCheck(false)){
+        //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
+        //}
+        tile.deselect()
+        t.piece = this
+        this.tile.piece = null
+        this.tile = t
+        deselectPossibleMoves(true)
     }
 
     override fun select() {
-        TODO("Not yet implemented")
+        val x = tile.x
+        val y = tile.y
+        val possibleMoves = ArrayList<GameActivity.Tile>()
+        if (x < 7 && y < 7) {
+            if (board[y + 1][x + 1].piece == null || board[y + 1][x + 1].piece?.playerControlled != playerControlled) {
+                if (!checkForControl(board[y + 1][x + 1])) {
+                    possibleMoves.add(board[y + 1][x + 1])
+                }
+            }
+        }
+        if (y < 7 && x > 0) {
+            if (board[y + 1][x - 1].piece == null || board[y + 1][x - 1].piece?.playerControlled != playerControlled) {
+                if (!checkForControl(board[y + 1][x - 1])) {
+                    possibleMoves.add(board[y + 1][x - 1])
+                }
+            }
+        }
+        if (y < 7) {
+            if (board[y + 1][x].piece == null || board[y + 1][x].piece?.playerControlled != playerControlled) {
+                if (!checkForControl(board[y + 1][x])) {
+                    possibleMoves.add(board[y + 1][x])
+                }
+            }
+        }
+        if (x < 7) {
+            if (board[y][x + 1].piece == null || board[y][x + 1].piece?.playerControlled != playerControlled) {
+                if (!checkForControl(board[y][x + 1])) {
+                    possibleMoves.add(board[y][x + 1])
+                }
+            }
+        }
+        if (x > 0) {
+            if (board[y][x - 1].piece == null || board[y][x - 1].piece?.playerControlled != playerControlled) {
+                if (!checkForControl(board[y][x - 1])) {
+                    possibleMoves.add(board[y][x - 1])
+                }
+            }
+        }
+        if (y > 0 && x > 0) {
+            if (board[y - 1][x - 1].piece == null || board[y - 1][x - 1].piece?.playerControlled != playerControlled) {
+                if (!checkForControl(board[y - 1][x - 1])) {
+                    possibleMoves.add(board[y - 1][x - 1])
+                }
+            }
+        }
+        if (y > 0 && x < 7) {
+            if (board[y - 1][x + 1].piece == null || board[y - 1][x + 1].piece?.playerControlled != playerControlled) {
+                if (!checkForControl(board[y - 1][x + 1])) {
+                    possibleMoves.add(board[y - 1][x + 1])
+                }
+            }
+        }
+        if (y > 0) {
+            if (board[y - 1][x].piece == null || board[y - 1][x].piece?.playerControlled != playerControlled) {
+                if (!checkForControl(board[y - 1][x])) {
+                    possibleMoves.add(board[y - 1][x])
+                }
+            }
+        }
+        if (!this.hasMoved) {
+            if(board[y][0].piece is Rook){
+                if(!(board[y][0].piece as Rook).hasMoved){
+                    var possibleLeft = true
+                    for(i in 1..(x-1)){
+                        if(board[y][i].piece != null){
+                            possibleLeft = false
+                            break
+                        }
+                        else{
+                            if(checkForControl(board[y][0])){
+                                possibleLeft = false
+                                break
+                            }
+                        }
+                    }
+                    if(possibleLeft){
+                        possibleMoves.add(board[y][x-2])
+                    }
+                }
+            }
+            if(board[y][7].piece is Rook){
+                if(!(board[y][7].piece as Rook).hasMoved){
+                    var possibleRight = true
+                    for(i in (x+1)..7){
+                        if(board[y][i].piece != null){
+                            possibleRight = false
+                            break
+                        }
+                        else{
+                            if(checkForControl(board[y][0])){
+                                possibleRight = false
+                                break
+                            }
+                        }
+                    }
+                    if(possibleRight){
+                        possibleMoves.add(board[y][x+2])
+                    }
+                }
+            }
+        }
+        for (t in possibleMoves) {
+            t.possibleMove = true
+            t.update()
+        }
+
     }
 
     override fun getChar(): Char {
@@ -719,6 +957,7 @@ class Rook(
         graphic, tile, board,
         playerControlled, moveStack
     ) {
+    var hasMoved = false
     override fun move(t: GameActivity.Tile) {
         if (t.piece != null) {
 
@@ -750,6 +989,7 @@ class Rook(
         this.tile.piece = null
         this.tile = t
         deselectPossibleMoves(true)
+        hasMoved = true
     }
 
     override fun select() {
