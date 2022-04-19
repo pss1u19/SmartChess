@@ -15,7 +15,8 @@ class GameActivity : AppCompatActivity() {
     val moveStack = Stack<Move>()
     lateinit var moveDisplay: TextView
     var selected: Tile? = null
-    lateinit var promotionSelector : Spinner
+    lateinit var promotionSelector: Spinner
+    var won = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -34,27 +35,29 @@ class GameActivity : AppCompatActivity() {
         moveDisplay.text = "Previous moves: "
         val undoButton = findViewById<Button>(R.id.undoButton)
         undoButton.setOnClickListener {
-            val moveStackSize = moveStack.size
-            if (selected != null) {
-                selected!!.deselect()
-                selected = null
-            }
-            if (moveStackSize > 1) {
-                for (i in 0..1) {
-                    val lastMove = moveStack.pop()
-                    lastMove.piece.tile.piece = null
-                    lastMove.piece.tile = lastMove.startTile
-                    lastMove.startTile.piece = lastMove.piece
-                    if (lastMove.piece is Pawn) if ((lastMove.piece as Pawn).hasMoved && abs(
-                            lastMove.startTile.y - lastMove.newTile.y
-                        ) == 2
-                    ) (lastMove.piece as Pawn).hasMoved = false
-                    if (lastMove.takingMove) {
-                        lastMove.takenPiece!!.tile.piece = lastMove.takenPiece
-                    }
-                    lastMove.piece.deselectPossibleMoves(true)
+            if (!won) {
+                val moveStackSize = moveStack.size
+                if (selected != null) {
+                    selected!!.deselect()
+                    selected = null
                 }
-                updateMoveDisplay()
+                if (moveStackSize > 1) {
+                    for (i in 0..1) {
+                        val lastMove = moveStack.pop()
+                        lastMove.piece.tile.piece = null
+                        lastMove.piece.tile = lastMove.startTile
+                        lastMove.startTile.piece = lastMove.piece
+                        if (lastMove.piece is Pawn) if ((lastMove.piece as Pawn).hasMoved && abs(
+                                lastMove.startTile.y - lastMove.newTile.y
+                            ) == 2
+                        ) (lastMove.piece as Pawn).hasMoved = false
+                        if (lastMove.takingMove) {
+                            lastMove.takenPiece!!.tile.piece = lastMove.takenPiece
+                        }
+                        lastMove.piece.deselectPossibleMoves(true)
+                    }
+                    updateMoveDisplay()
+                }
             }
         }
         assignTiles()
@@ -94,7 +97,7 @@ class GameActivity : AppCompatActivity() {
             board[0][4].piece =
                 King(R.drawable.white_king, board[0][4], board, true, moveStack)
             for (t in board[1]) {
-                t.piece = Pawn(R.drawable.white_pawn, t, board, true, moveStack,promotionSelector)
+                t.piece = Pawn(R.drawable.white_pawn, t, board, true, moveStack, promotionSelector)
             }
             board[7][0].piece =
                 Rook(R.drawable.black_rook, board[7][0], board, false, moveStack)
@@ -113,7 +116,7 @@ class GameActivity : AppCompatActivity() {
             board[7][4].piece =
                 King(R.drawable.black_king, board[7][4], board, false, moveStack)
             for (t in board[6]) {
-                t.piece = Pawn(R.drawable.black_pawn, t, board, false, moveStack,promotionSelector)
+                t.piece = Pawn(R.drawable.black_pawn, t, board, false, moveStack, promotionSelector)
             }
             for (t in board[0]) t.update()
             for (t in board[1]) t.update()
@@ -138,7 +141,7 @@ class GameActivity : AppCompatActivity() {
             board[7][3].piece =
                 King(R.drawable.white_king, board[7][3], board, false, moveStack)
             for (t in board[6]) {
-                t.piece = Pawn(R.drawable.white_pawn, t, board, false, moveStack,promotionSelector)
+                t.piece = Pawn(R.drawable.white_pawn, t, board, false, moveStack, promotionSelector)
             }
             board[0][0].piece =
                 Rook(R.drawable.black_rook, board[0][0], board, true, moveStack)
@@ -157,7 +160,7 @@ class GameActivity : AppCompatActivity() {
             board[0][3].piece =
                 King(R.drawable.black_king, board[0][3], board, true, moveStack)
             for (t in board[1]) {
-                t.piece = Pawn(R.drawable.black_pawn, t, board, true, moveStack,promotionSelector)
+                t.piece = Pawn(R.drawable.black_pawn, t, board, true, moveStack, promotionSelector)
             }
             for (t in board[0]) t.update()
             for (t in board[1]) t.update()
@@ -180,41 +183,49 @@ class GameActivity : AppCompatActivity() {
         for (i in 0..7) {
             for (j in 0..7) {
                 board[i][j].button.setOnClickListener {
-                    val tile = getTile(it)
-                    when (selected) {
-                        tile -> {
-                            tile!!.deselect()
-                            selected = null
-                        }
-                        null -> {
-                            if (tile!!.piece != null) {
-                                if (moveStack.isEmpty()) {
-                                    if (tile.piece!!.playerControlled != intent.extras!!.get("Colour") as Boolean) {
+                    if (!won) {
+                        val tile = getTile(it)
+                        when (selected) {
+                            tile -> {
+                                tile!!.deselect()
+                                selected = null
+                            }
+                            null -> {
+                                if (tile!!.piece != null) {
+                                    if (moveStack.isEmpty()) {
+                                        if (tile.piece!!.playerControlled != intent.extras!!.get("Colour") as Boolean) {
+                                            tile.select()
+                                            selected = tile
+                                            selected!!.update()
+                                        }
+                                    } else if (moveStack.peek().piece.playerControlled != tile.piece!!.playerControlled) {
                                         tile.select()
                                         selected = tile
                                         selected!!.update()
                                     }
-                                } else if (moveStack.peek().piece.playerControlled != tile.piece!!.playerControlled) {
-                                    tile.select()
-                                    selected = tile
-                                    selected!!.update()
                                 }
                             }
-                        }
-                        else -> {
-                            if (tile?.possibleMove == true) {
-                                selected!!.piece?.move(tile)
-                                selected!!.deselect()
-                                selected = null
-                                updateMoveDisplay()
-                            } else {
-                                selected!!.deselect()
-                                selected = null
+                            else -> {
+                                if (tile?.possibleMove == true) {
+                                    selected!!.piece?.move(tile)
+                                    selected!!.deselect()
+                                    selected = null
+                                    updateMoveDisplay()
+                                    if(moveStack.peek().takingMove){
+                                        val piece = moveStack.peek().takenPiece
+                                        if(piece is King){
+
+                                        }
+                                    }
+                                } else {
+                                    selected!!.deselect()
+                                    selected = null
+                                }
+
                             }
-
                         }
-                    }
 
+                    }
                 }
             }
         }

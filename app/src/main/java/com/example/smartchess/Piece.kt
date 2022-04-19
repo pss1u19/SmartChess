@@ -13,7 +13,37 @@ abstract class Piece(
     val playerControlled: Boolean,
     val moveStack: Stack<GameActivity.Move>,
 ) {
-    abstract fun move(t: GameActivity.Tile)
+    open fun move(t: GameActivity.Tile){
+        if (t.piece != null) {
+            moveStack.push(
+                GameActivity.Move(
+                    tile,
+                    this,
+                    t.piece!!,
+                    t,
+                    "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
+                )
+            )
+        } else {
+            moveStack.push(
+                GameActivity.Move(
+                    tile,
+                    this,
+                    t,
+                    "" + this.getChar() + 'a'.plus(t.x) + (t.y + 1).toString()
+                )
+            )
+        }
+
+        //if(checkForCheck(false)){
+        //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
+        //}
+        tile.deselect()
+        t.piece = this
+        this.tile.piece = null
+        this.tile = t
+        deselectPossibleMoves(true)
+    }
     abstract fun select()
     fun deselectPossibleMoves(update: Boolean) {
         for (line in board) {
@@ -125,12 +155,12 @@ abstract class Piece(
                 }
             }
             for (p in getEnemyPieces()) {
-                p.select()
+                if(p !is King)p.select()
                 if (king!!.tile.possibleMove) {
-                    p.deselectPossibleMoves(false)
+                    p.deselectPossibleMoves(true)
                     return true
                 }
-                p.deselectPossibleMoves(false)
+                p.deselectPossibleMoves(true)
             }
             return false
         } else {
@@ -141,12 +171,12 @@ abstract class Piece(
                 }
             }
             for (p in getAlliedPieces()) {
-                p.select()
+                if(p !is King)p.select()
                 if (king!!.tile.possibleMove) {
-                    p.deselectPossibleMoves(false)
+                    p.deselectPossibleMoves(true)
                     return true
                 }
-                p.deselectPossibleMoves(false)
+                p.deselectPossibleMoves(true)
             }
             return false
         }
@@ -203,37 +233,7 @@ class Pawn(
             deselectPossibleMoves(true)
             return
         }
-        if (t.piece != null) {
-
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t.piece!!,
-                    t,
-                    "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
-                )
-            )
-        } else {
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t,
-                    "" + this.getChar() + (t.y + 1).toString()
-                )
-            )
-        }
-
-        //if(checkForCheck(false)){
-        //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
-        //}
-
-        tile.deselect()
-        t.piece = this
-        this.tile.piece = null
-        this.tile = t
-        hasMoved = true
+        super.move(t)
 
         if ((t.y == 7 && playerControlled) || (t.y == 0 && !playerControlled)) {
             val p = promotionSpinner.selectedItem.toString()
@@ -348,35 +348,7 @@ class Bishop(
         playerControlled, moveStack
     ) {
     override fun move(t: GameActivity.Tile) {
-        if (t.piece != null) {
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t.piece!!,
-                    t,
-                    "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
-                )
-            )
-        } else {
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t,
-                    "" + this.getChar() + 'a'.plus(t.x) + (t.y + 1).toString()
-                )
-            )
-        }
 
-        //if(checkForCheck(false)){
-        //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
-        //}
-        tile.deselect()
-        t.piece = this
-        this.tile.piece = null
-        this.tile = t
-        deselectPossibleMoves(true)
     }
 
     override fun select() {
@@ -472,38 +444,6 @@ class Knight(
         graphic, tile, board,
         playerControlled, moveStack
     ) {
-    override fun move(t: GameActivity.Tile) {
-        if (t.piece != null) {
-
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t.piece!!,
-                    t,
-                    "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
-                )
-            )
-        } else {
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t,
-                    "" + this.getChar() + 'a'.plus(t.x) + (t.y + 1).toString()
-                )
-            )
-        }
-
-        //if(checkForCheck(false)){
-        //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
-        //}
-        tile.deselect()
-        t.piece = this
-        this.tile.piece = null
-        this.tile = t
-        deselectPossibleMoves(true)
-    }
 
     override fun select() {
         val x = tile.x
@@ -601,36 +541,7 @@ class King(
 
         }
 
-        if (t.piece != null) {
-
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t.piece!!,
-                    t,
-                    "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
-                )
-            )
-        } else {
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t,
-                    "" + this.getChar() + 'a'.plus(t.x) + (t.y + 1).toString()
-                )
-            )
-        }
-
-        //if(checkForCheck(false)){
-        //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
-        //}
-        tile.deselect()
-        t.piece = this
-        this.tile.piece = null
-        this.tile = t
-        deselectPossibleMoves(true)
+        super.move(t)
     }
 
     override fun select() {
@@ -758,38 +669,6 @@ class Queen(
         graphic, tile, board,
         playerControlled, moveStack
     ) {
-    override fun move(t: GameActivity.Tile) {
-        if (t.piece != null) {
-
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t.piece!!,
-                    t,
-                    "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
-                )
-            )
-        } else {
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t,
-                    "" + this.getChar() + 'a'.plus(t.x) + (t.y + 1).toString()
-                )
-            )
-        }
-
-        //if(checkForCheck(false)){
-        //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
-        //}
-        tile.deselect()
-        t.piece = this
-        this.tile.piece = null
-        this.tile = t
-        deselectPossibleMoves(true)
-    }
 
     override fun select() {
         val x = tile.x
@@ -959,37 +838,8 @@ class Rook(
     ) {
     var hasMoved = false
     override fun move(t: GameActivity.Tile) {
-        if (t.piece != null) {
-
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t.piece!!,
-                    t,
-                    "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
-                )
-            )
-        } else {
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t,
-                    "" + this.getChar() + 'a'.plus(t.x) + (t.y + 1).toString()
-                )
-            )
-        }
-
-        //if(checkForCheck(false)){
-        //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
-        //}
-        tile.deselect()
-        t.piece = this
-        this.tile.piece = null
-        this.tile = t
-        deselectPossibleMoves(true)
         hasMoved = true
+        super.move(t)
     }
 
     override fun select() {
