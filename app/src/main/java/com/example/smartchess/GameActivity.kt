@@ -52,7 +52,13 @@ class GameActivity : AppCompatActivity() {
                             ) == 2
                         ) (lastMove.piece as Pawn).hasMoved = false
                         if (lastMove.takingMove) {
-                            lastMove.takenPiece!!.tile.piece = lastMove.takenPiece
+                            if (lastMove.castling) {
+                                lastMove.takenPiece!!.tile.piece = null
+                                lastMove.castlingTile!!.piece = lastMove.takenPiece
+                                lastMove.takenPiece!!.tile= lastMove.castlingTile!!
+                            } else {
+                                lastMove.takenPiece!!.tile.piece = lastMove.takenPiece
+                            }
                         }
                         lastMove.piece.deselectPossibleMoves(true)
                     }
@@ -123,6 +129,22 @@ class GameActivity : AppCompatActivity() {
             for (t in board[6]) t.update()
             for (t in board[7]) t.update()
         } else {
+            findViewById<TextView>(R.id.column1).text = "h"
+            findViewById<TextView>(R.id.column2).text = "g"
+            findViewById<TextView>(R.id.column3).text = "f"
+            findViewById<TextView>(R.id.column4).text = "e"
+            findViewById<TextView>(R.id.column5).text = "d"
+            findViewById<TextView>(R.id.column6).text = "c"
+            findViewById<TextView>(R.id.column7).text = "b"
+            findViewById<TextView>(R.id.column8).text = "a"
+            findViewById<TextView>(R.id.row1).text = "8"
+            findViewById<TextView>(R.id.row2).text = "7"
+            findViewById<TextView>(R.id.row3).text = "6"
+            findViewById<TextView>(R.id.row4).text = "5"
+            findViewById<TextView>(R.id.row5).text = "4"
+            findViewById<TextView>(R.id.row6).text = "3"
+            findViewById<TextView>(R.id.row7).text = "2"
+            findViewById<TextView>(R.id.row8).text = "1"
 
             board[7][0].piece =
                 Rook(R.drawable.white_rook, board[7][0], board, false, moveStack)
@@ -211,10 +233,24 @@ class GameActivity : AppCompatActivity() {
                                     selected!!.deselect()
                                     selected = null
                                     updateMoveDisplay()
-                                    if(moveStack.peek().takingMove){
+                                    if (moveStack.peek().takingMove) {
                                         val piece = moveStack.peek().takenPiece
-                                        if(piece is King){
-
+                                        if (piece is King) {
+                                            won = true
+                                            moveDisplay.textSize = 42f
+                                            if (intent.extras!!.get("Colour") as Boolean) {
+                                                if (piece.playerControlled) {
+                                                    moveDisplay.text = "        White won!!!"
+                                                } else {
+                                                    moveDisplay.text = "        Black won!!!"
+                                                }
+                                            } else {
+                                                if (piece.playerControlled) {
+                                                    moveDisplay.text = "        Black won!!!"
+                                                } else {
+                                                    moveDisplay.text = "        White won!!!"
+                                                }
+                                            }
                                         }
                                     }
                                 } else {
@@ -372,6 +408,8 @@ class GameActivity : AppCompatActivity() {
     ) {
         var takingMove = false
         var takenPiece: Piece? = null
+        var castling = false
+        var castlingTile: Tile? = null
 
         constructor (
             startTile: Tile,
@@ -380,6 +418,20 @@ class GameActivity : AppCompatActivity() {
             newTile: Tile,
             stringRep: String
         ) : this(startTile, piece, newTile, stringRep) {
+            this.takingMove = true
+            this.takenPiece = takenPiece
+        }
+
+        constructor (
+            startTile: Tile,
+            piece: Piece,
+            takenPiece: Piece,
+            newTile: Tile,
+            csTile: Tile?,
+            stringRep: String
+        ) : this(startTile, piece, newTile, stringRep) {
+            castling = true
+            castlingTile = csTile
             this.takingMove = true
             this.takenPiece = takenPiece
         }

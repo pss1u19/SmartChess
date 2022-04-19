@@ -34,14 +34,14 @@ abstract class Piece(
                 )
             )
         }
-
-        //if(checkForCheck(false)){
-        //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
-        //}
         tile.deselect()
         t.piece = this
         this.tile.piece = null
         this.tile = t
+
+        if(checkForCheck(false)){
+            moveStack.peek().stringRep = moveStack.peek().stringRep + "+"
+        }
         deselectPossibleMoves(true)
     }
     abstract fun select()
@@ -131,7 +131,6 @@ abstract class Piece(
                         board[y - 1][x].possibleMove = true
                     }
                 }
-
             }
             if (tile.possibleMove) {
                 tile.piece = p
@@ -223,9 +222,9 @@ class Pawn(
                     "" + this.getChar() + "x" + prevMove.piece.getChar() + "" + (t.y + 1).toString() + " e.p."
                 )
             )
-            //if(checkForCheck(false)){
-            //    moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
-            //}
+            if(checkForCheck(false)){
+                moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
+            }
             t.piece = this
             this.tile.piece = null
             prevMove.newTile.piece = null
@@ -234,6 +233,10 @@ class Pawn(
             return
         }
         super.move(t)
+        hasMoved = true
+        if(!moveStack.peek().takingMove){
+            moveStack.peek().stringRep = moveStack.peek().stringRep.substring(1)
+        }
 
         if ((t.y == 7 && playerControlled) || (t.y == 0 && !playerControlled)) {
             val p = promotionSpinner.selectedItem.toString()
@@ -347,10 +350,6 @@ class Bishop(
         graphic, tile, board,
         playerControlled, moveStack
     ) {
-    override fun move(t: GameActivity.Tile) {
-
-    }
-
     override fun select() {
         val x = tile.x
         val y = tile.y
@@ -530,15 +529,52 @@ class King(
         val y = tile.y
         if(t.x-x == 2){
             if(7-x == 3){
-                moveStack.push(GameActivity.Move(this.tile,this,board[y][7].piece!!,t,"0-0"))
+                moveStack.push(GameActivity.Move(this.tile,this,board[y][7].piece!!,t,board[y][7],"0-0"))
                 t.piece = this
                 this.tile.piece = null
                 this.tile = t
                 board[y][7].piece!!.tile = board[y][x+1]
                 board[y][x+1].piece = board[y][7].piece
                 board[y][7].piece = null
+                deselectPossibleMoves(true)
+                return
+            }
+            if(7-x == 4){
+                moveStack.push(GameActivity.Move(this.tile,this,board[y][7].piece!!,t,board[y][7],"0-0-0"))
+                t.piece = this
+                this.tile.piece = null
+                this.tile = t
+                board[y][7].piece!!.tile = board[y][x+1]
+                board[y][x+1].piece = board[y][7].piece
+                board[y][7].piece = null
+                deselectPossibleMoves(true)
+                return
             }
 
+        }
+        if(t.x-x == -2){
+            if(7-x == 3){
+                moveStack.push(GameActivity.Move(this.tile,this,board[y][0].piece!!,t,board[y][0],"0-0-0"))
+                t.piece = this
+                this.tile.piece = null
+                this.tile = t
+                board[y][0].piece!!.tile = board[y][x-1]
+                board[y][x-1].piece = board[y][0].piece
+                board[y][0].piece = null
+                deselectPossibleMoves(true)
+                return
+            }
+            if(7-x == 4){
+                moveStack.push(GameActivity.Move(this.tile,this,board[y][0].piece!!,t,board[y][0],"0-0-0"))
+                t.piece = this
+                this.tile.piece = null
+                this.tile = t
+                board[y][0].piece!!.tile = board[y][x-1]
+                board[y][x-1].piece = board[y][0].piece
+                board[y][0].piece = null
+                deselectPossibleMoves(true)
+                return
+            }
         }
 
         super.move(t)
@@ -605,36 +641,47 @@ class King(
             }
         }
         if (!this.hasMoved) {
+            println("a")
             if(board[y][0].piece is Rook){
+                println("b")
                 if(!(board[y][0].piece as Rook).hasMoved){
+                    println("c")
                     var possibleLeft = true
                     for(i in 1..(x-1)){
                         if(board[y][i].piece != null){
+                            println(i)
                             possibleLeft = false
                             break
                         }
                         else{
-                            if(checkForControl(board[y][0])){
+                            if(checkForControl(board[y][i])){
+                                println(i+10)
                                 possibleLeft = false
                                 break
                             }
                         }
                     }
                     if(possibleLeft){
+                        println("d")
                         possibleMoves.add(board[y][x-2])
                     }
                 }
             }
             if(board[y][7].piece is Rook){
+                println("r1")
                 if(!(board[y][7].piece as Rook).hasMoved){
+                    println("r2")
                     var possibleRight = true
-                    for(i in (x+1)..7){
+                    for(i in ((x+1)..6)){
+                        println(i.toString())
                         if(board[y][i].piece != null){
+                            println("r"+i.toString())
                             possibleRight = false
                             break
                         }
                         else{
-                            if(checkForControl(board[y][0])){
+                            if(checkForControl(board[y][i])){
+                                println("1r"+i.toString())
                                 possibleRight = false
                                 break
                             }
