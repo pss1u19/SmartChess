@@ -1,9 +1,7 @@
 package com.example.smartchess
 
 import android.widget.Spinner
-import java.lang.Exception
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.abs
 
 abstract class Piece(
@@ -13,7 +11,27 @@ abstract class Piece(
     val playerControlled: Boolean,
     val moveStack: Stack<GameActivity.Move>,
 ) {
-    open fun move(t: GameActivity.Tile){
+    fun undo(){
+        val lastMove = this.moveStack.pop()
+        lastMove.piece.tile.piece = null
+        lastMove.piece.tile = lastMove.startTile
+        lastMove.startTile.piece = lastMove.piece
+        if (lastMove.piece is Pawn) if ((lastMove.piece as Pawn).hasMoved && Math.abs(
+                lastMove.startTile.y - lastMove.newTile.y
+            ) == 2
+        ) (lastMove.piece as Pawn).hasMoved = false
+        if (lastMove.takingMove) {
+            if (lastMove.castling) {
+                lastMove.takenPiece!!.tile.piece = null
+                lastMove.castlingTile!!.piece = lastMove.takenPiece
+                lastMove.takenPiece!!.tile = lastMove.castlingTile!!
+            } else {
+                lastMove.takenPiece!!.tile.piece = lastMove.takenPiece
+            }
+        }
+        lastMove.piece.deselectPossibleMoves(true)
+    }
+    open fun move(t: GameActivity.Tile) {
         if (t.piece != null) {
             moveStack.push(
                 GameActivity.Move(
@@ -39,12 +57,21 @@ abstract class Piece(
         this.tile.piece = null
         this.tile = t
 
-        if(checkForCheck(false)){
+        if (checkForCheck(false)) {
             moveStack.peek().stringRep = moveStack.peek().stringRep + "+"
         }
         deselectPossibleMoves(true)
     }
-    abstract fun select()
+
+    fun select() {
+        val posMoves = getPossibleMoves()
+        deselectPossibleMoves(true)
+        for (t in posMoves) {
+            t.possibleMove = true
+            t.update()
+        }
+    }
+
     fun deselectPossibleMoves(update: Boolean) {
         for (line in board) {
             for (t in line) {
@@ -87,7 +114,7 @@ abstract class Piece(
         tile.piece = this
         for (enemyPiece in getEnemyPieces()) {
             if (enemyPiece !is King) {
-                enemyPiece.select()
+                enemyPiece.selectNoCheck()
             } else {
                 val x = enemyPiece.tile.x
                 val y = enemyPiece.tile.y
@@ -154,12 +181,12 @@ abstract class Piece(
                 }
             }
             for (p in getEnemyPieces()) {
-                if(p !is King)p.select()
+                if (p !is King) p.selectNoCheck()
                 if (king!!.tile.possibleMove) {
-                    p.deselectPossibleMoves(true)
+                    p.deselectPossibleMoves(false)
                     return true
                 }
-                p.deselectPossibleMoves(true)
+                p.deselectPossibleMoves(false)
             }
             return false
         } else {
@@ -170,18 +197,21 @@ abstract class Piece(
                 }
             }
             for (p in getAlliedPieces()) {
-                if(p !is King)p.select()
+                if (p !is King) p.selectNoCheck()
                 if (king!!.tile.possibleMove) {
-                    p.deselectPossibleMoves(true)
+                    p.deselectPossibleMoves(false)
                     return true
                 }
-                p.deselectPossibleMoves(true)
+                p.deselectPossibleMoves(false)
             }
             return false
         }
     }
 
+    abstract fun selectNoCheck()
     abstract fun getChar(): Char
+    abstract fun getPossibleMoves(): ArrayList<GameActivity.Tile>
+
 }
 
 class Pawn(
@@ -222,7 +252,7 @@ class Pawn(
                     "" + this.getChar() + "x" + prevMove.piece.getChar() + "" + (t.y + 1).toString() + " e.p."
                 )
             )
-            if(checkForCheck(false)){
+            if (checkForCheck(false)) {
                 moveStack.peek().stringRep = moveStack.peek().stringRep + " +"
             }
             t.piece = this
@@ -234,7 +264,7 @@ class Pawn(
         }
         super.move(t)
         hasMoved = true
-        if(!moveStack.peek().takingMove){
+        if (!moveStack.peek().takingMove) {
             moveStack.peek().stringRep = moveStack.peek().stringRep.substring(1)
         }
 
@@ -269,20 +299,20 @@ class Pawn(
                     }
                 }
                 "Rook" -> {
-                    if(this.graphic == R.drawable.white_pawn){
-                        t.piece = Rook(R.drawable.white_rook,t,board,playerControlled,moveStack)
-                    }
-                    else{
-                        t.piece = Rook(R.drawable.black_rook,t,board,playerControlled,moveStack)
+                    if (this.graphic == R.drawable.white_pawn) {
+                        t.piece = Rook(R.drawable.white_rook, t, board, playerControlled, moveStack)
+                    } else {
+                        t.piece = Rook(R.drawable.black_rook, t, board, playerControlled, moveStack)
                     }
                 }
             }
-            moveStack.peek().stringRep = moveStack.peek().stringRep+"="+ t.piece!!.getChar()
+            moveStack.peek().stringRep = moveStack.peek().stringRep + "=" + t.piece!!.getChar()
         }
         deselectPossibleMoves(true)
     }
 
-    override fun select() {
+
+    override fun selectNoCheck() {
         val x = tile.x
         val y = tile.y
         var d = 1
@@ -336,6 +366,89 @@ class Pawn(
         return 'a'.plus(tile.x)
     }
 
+    override fun getPossibleMoves(): ArrayList<GameActivity.Tile> {
+        val x = tile.x
+        val y = tile.y
+        var d = 1
+        val possibleMoves = ArrayList<GameActivity.Tile>()
+        if (!playerControlled) d = -1
+        if (!hasMoved) {
+
+            if (board[y + d][x].piece == null) {
+                board[y + d][x].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y + d][x])
+                }
+                this.tile.piece = this
+                board[y + d][x].piece = null
+                if (board[y + 2 * d][x].piece == null) {
+                    board[y + 2 * d][x].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y + 2 * d][x])
+                    }
+                    this.tile.piece = this
+                    board[y + 2 * d][x].piece = null
+                    board[y + 2 * d][x].update()
+                }
+            }
+
+
+        } else {
+            if (board[y + d][x].piece == null) {
+                board[y + d][x].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y + d][x])
+                }
+                this.tile.piece = this
+                board[y + d][x].piece = null
+            }
+
+        }
+        if (!moveStack.isEmpty()) {
+            val lastMove = moveStack.peek()
+            if (lastMove.piece is Pawn && abs(lastMove.newTile.x - x) == 1 && abs(lastMove.newTile.y - lastMove.startTile.y) == 2) {
+                val pawn = lastMove.piece
+                if ((y == 4 && playerControlled) || (y == 3 && !playerControlled)) {
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y + d][pawn.tile.x])
+                    }
+                    this.tile.piece = this
+                }
+            }
+        }
+        try {
+            if (board[y + d][x + 1].piece!!.playerControlled != playerControlled) {
+                this.tile.piece = null
+                val p = board[y + d][x + 1].piece
+                board[y + d][x + 1].piece = this
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y + d][x + 1])
+                }
+                this.tile.piece = this
+                board[y + d][x + 1].piece = p
+            }
+        } catch (e: Exception) {
+        }
+        try {
+            if (board[y + d][x - 1].piece!!.playerControlled != playerControlled) {
+                this.tile.piece = null
+                val p = board[y + d][x - 1].piece
+                board[y + d][x - 1].piece = this
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y + d][x - 1])
+                }
+                this.tile.piece = this
+                board[y + d][x - 1].piece = p
+            }
+        } catch (e: Exception) {
+        }
+        return possibleMoves
+    }
+
 
 }
 
@@ -350,7 +463,8 @@ class Bishop(
         graphic, tile, board,
         playerControlled, moveStack
     ) {
-    override fun select() {
+
+    override fun selectNoCheck() {
         val x = tile.x
         val y = tile.y
         for (i in 1..6) {
@@ -430,6 +544,129 @@ class Bishop(
     override fun getChar(): Char {
         return 'B'
     }
+
+    override fun getPossibleMoves(): ArrayList<GameActivity.Tile> {
+        val x = tile.x
+        val y = tile.y
+        val possibleMoves = ArrayList<GameActivity.Tile>()
+        for (i in 1..6) {
+            try {
+                if (board[y + i][x + i].piece != null) {
+                    if (board[y + i][x + i].piece!!.playerControlled != playerControlled) {
+                        val p = board[y + i][x + i].piece
+                        board[y + i][x + i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y + i][x + i])
+                        }
+                        board[y + i][x + i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y + i][x + i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y + i][x + i])
+                    }
+                    board[y + i][x + i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y + i][x - i].piece != null) {
+                    if (board[y + i][x - i].piece!!.playerControlled != playerControlled) {
+                        val p = board[y + i][x - i].piece
+                        board[y + i][x - i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y + i][x - i])
+                        }
+                        board[y + i][x - i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y + i][x - i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y + i][x - i])
+                    }
+                    board[y + i][x - i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y - i][x + i].piece != null) {
+                    if (board[y - i][x + i].piece!!.playerControlled != playerControlled) {
+                        val p = board[y - i][x + i].piece
+                        board[y - i][x + i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y - i][x + i])
+                        }
+                        board[y - i][x + i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y - i][x + i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y - i][x + i])
+                    }
+                    board[y - i][x + i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y - i][x - i].piece != null) {
+                    if (board[y - i][x - i].piece!!.playerControlled != playerControlled) {
+                        val p = board[y - i][x - i].piece
+                        board[y - i][x - i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y - i][x - i])
+                        }
+                        board[y - i][x - i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y - i][x - i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y - i][x - i])
+                    }
+                    board[y - i][x - i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        return possibleMoves
+    }
 }
 
 class Knight(
@@ -444,7 +681,7 @@ class Knight(
         playerControlled, moveStack
     ) {
 
-    override fun select() {
+    override fun selectNoCheck() {
         val x = tile.x
         val y = tile.y
         try {
@@ -510,6 +747,118 @@ class Knight(
         return 'N'
     }
 
+    override fun getPossibleMoves(): ArrayList<GameActivity.Tile> {
+        val x = tile.x
+        val y = tile.y
+        val possibleMoves = ArrayList<GameActivity.Tile>()
+        try {
+            if (board[y + 2][x + 1].piece == null || board[y + 2][x + 1].piece?.playerControlled != this.playerControlled) {
+                var p = board[y + 2][x + 1].piece
+                board[y + 2][x + 1].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y + 2][x + 1])
+                }
+                board[y + 2][x + 1].piece = p
+                this.tile.piece = this
+            }
+        } catch (e: Exception) {
+        }
+        try {
+            if (board[y + 2][x - 1].piece == null || board[y + 2][x - 1].piece?.playerControlled != this.playerControlled) {
+                var p = board[y + 2][x - 1].piece
+                board[y + 2][x - 1].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y + 2][x - 1])
+                }
+                board[y + 2][x - 1].piece = p
+                this.tile.piece = this
+            }
+        } catch (e: Exception) {
+        }
+        try {
+            if (board[y + 1][x + 2].piece == null || board[y + 1][x + 2].piece?.playerControlled != this.playerControlled) {
+                var p = board[y + 1][x + 2].piece
+                board[y + 1][x + 2].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y + 1][x + 2])
+                }
+                board[y + 1][x + 2].piece = p
+                this.tile.piece = this
+            }
+        } catch (e: Exception) {
+        }
+        try {
+            if (board[y + 1][x - 2].piece == null || board[y + 1][x - 2].piece?.playerControlled != this.playerControlled) {
+                var p = board[y + 1][x - 2].piece
+                board[y + 1][x - 2].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y + 1][x - 2])
+                }
+                board[y + 1][x - 2].piece = p
+                this.tile.piece = this
+            }
+        } catch (e: Exception) {
+        }
+        try {
+            if (board[y - 2][x + 1].piece == null || board[y - 2][x + 1].piece?.playerControlled != this.playerControlled) {
+                var p = board[y - 2][x + 1].piece
+                board[y - 2][x + 1].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y - 2][x + 1])
+                }
+                board[y - 2][x + 1].piece = p
+                this.tile.piece = this
+            }
+        } catch (e: Exception) {
+        }
+        try {
+            if (board[y - 2][x - 1].piece == null || board[y - 2][x - 1].piece?.playerControlled != this.playerControlled) {
+                var p = board[y - 2][x - 1].piece
+                board[y - 2][x - 1].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y - 2][x - 1])
+                }
+                board[y - 2][x - 1].piece = p
+                this.tile.piece = this
+            }
+        } catch (e: Exception) {
+        }
+        try {
+            if (board[y - 1][x + 2].piece == null || board[y - 1][x + 2].piece?.playerControlled != this.playerControlled) {
+                var p = board[y - 1][x + 2].piece
+                board[y - 1][x + 2].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y - 1][x + 2])
+                }
+                board[y - 1][x + 2].piece = p
+                this.tile.piece = this
+            }
+        } catch (e: Exception) {
+        }
+        try {
+            if (board[y - 1][x - 2].piece == null || board[y - 1][x - 2].piece?.playerControlled != this.playerControlled) {
+                var p = board[y - 1][x - 2].piece
+                board[y - 1][x - 2].piece = this
+                this.tile.piece = null
+                if (!checkForCheck(true)) {
+                    possibleMoves.add(board[y - 1][x - 2])
+                }
+                board[y - 1][x - 2].piece = p
+                this.tile.piece = this
+            }
+        } catch (e: Exception) {
+        }
+        return possibleMoves
+
+    }
+
 }
 
 class King(
@@ -527,50 +876,86 @@ class King(
     override fun move(t: GameActivity.Tile) {
         val x = tile.x
         val y = tile.y
-        if(t.x-x == 2){
-            if(7-x == 3){
-                moveStack.push(GameActivity.Move(this.tile,this,board[y][7].piece!!,t,board[y][7],"0-0"))
+        if (t.x - x == 2) {
+            if (7 - x == 3) {
+                moveStack.push(
+                    GameActivity.Move(
+                        this.tile,
+                        this,
+                        board[y][7].piece!!,
+                        t,
+                        board[y][7],
+                        "0-0"
+                    )
+                )
                 t.piece = this
                 this.tile.piece = null
                 this.tile = t
-                board[y][7].piece!!.tile = board[y][x+1]
-                board[y][x+1].piece = board[y][7].piece
+                board[y][7].piece!!.tile = board[y][x + 1]
+                board[y][x + 1].piece = board[y][7].piece
                 board[y][7].piece = null
                 deselectPossibleMoves(true)
                 return
             }
-            if(7-x == 4){
-                moveStack.push(GameActivity.Move(this.tile,this,board[y][7].piece!!,t,board[y][7],"0-0-0"))
+            if (7 - x == 4) {
+                moveStack.push(
+                    GameActivity.Move(
+                        this.tile,
+                        this,
+                        board[y][7].piece!!,
+                        t,
+                        board[y][7],
+                        "0-0-0"
+                    )
+                )
                 t.piece = this
                 this.tile.piece = null
                 this.tile = t
-                board[y][7].piece!!.tile = board[y][x+1]
-                board[y][x+1].piece = board[y][7].piece
+                board[y][7].piece!!.tile = board[y][x + 1]
+                board[y][x + 1].piece = board[y][7].piece
                 board[y][7].piece = null
                 deselectPossibleMoves(true)
                 return
             }
 
         }
-        if(t.x-x == -2){
-            if(7-x == 3){
-                moveStack.push(GameActivity.Move(this.tile,this,board[y][0].piece!!,t,board[y][0],"0-0-0"))
+        if (t.x - x == -2) {
+            if (7 - x == 3) {
+                moveStack.push(
+                    GameActivity.Move(
+                        this.tile,
+                        this,
+                        board[y][0].piece!!,
+                        t,
+                        board[y][0],
+                        "0-0-0"
+                    )
+                )
                 t.piece = this
                 this.tile.piece = null
                 this.tile = t
-                board[y][0].piece!!.tile = board[y][x-1]
-                board[y][x-1].piece = board[y][0].piece
+                board[y][0].piece!!.tile = board[y][x - 1]
+                board[y][x - 1].piece = board[y][0].piece
                 board[y][0].piece = null
                 deselectPossibleMoves(true)
                 return
             }
-            if(7-x == 4){
-                moveStack.push(GameActivity.Move(this.tile,this,board[y][0].piece!!,t,board[y][0],"0-0-0"))
+            if (7 - x == 4) {
+                moveStack.push(
+                    GameActivity.Move(
+                        this.tile,
+                        this,
+                        board[y][0].piece!!,
+                        t,
+                        board[y][0],
+                        "0-0-0"
+                    )
+                )
                 t.piece = this
                 this.tile.piece = null
                 this.tile = t
-                board[y][0].piece!!.tile = board[y][x-1]
-                board[y][x-1].piece = board[y][0].piece
+                board[y][0].piece!!.tile = board[y][x - 1]
+                board[y][x - 1].piece = board[y][0].piece
                 board[y][0].piece = null
                 deselectPossibleMoves(true)
                 return
@@ -580,7 +965,15 @@ class King(
         super.move(t)
     }
 
-    override fun select() {
+    override fun selectNoCheck() {
+        return
+    }
+
+    override fun getChar(): Char {
+        return 'K'
+    }
+
+    override fun getPossibleMoves(): ArrayList<GameActivity.Tile> {
         val x = tile.x
         val y = tile.y
         val possibleMoves = ArrayList<GameActivity.Tile>()
@@ -642,66 +1035,57 @@ class King(
         }
         if (!this.hasMoved) {
             println("a")
-            if(board[y][0].piece is Rook){
+            if (board[y][0].piece is Rook) {
                 println("b")
-                if(!(board[y][0].piece as Rook).hasMoved){
+                if (!(board[y][0].piece as Rook).hasMoved) {
                     println("c")
                     var possibleLeft = true
-                    for(i in 1..(x-1)){
-                        if(board[y][i].piece != null){
+                    for (i in 1..(x - 1)) {
+                        if (board[y][i].piece != null) {
                             println(i)
                             possibleLeft = false
                             break
-                        }
-                        else{
-                            if(checkForControl(board[y][i])){
-                                println(i+10)
+                        } else {
+                            if (checkForControl(board[y][i])) {
+                                println(i + 10)
                                 possibleLeft = false
                                 break
                             }
                         }
                     }
-                    if(possibleLeft){
+                    if (possibleLeft) {
                         println("d")
-                        possibleMoves.add(board[y][x-2])
+                        possibleMoves.add(board[y][x - 2])
                     }
                 }
             }
-            if(board[y][7].piece is Rook){
+            if (board[y][7].piece is Rook) {
                 println("r1")
-                if(!(board[y][7].piece as Rook).hasMoved){
+                if (!(board[y][7].piece as Rook).hasMoved) {
                     println("r2")
                     var possibleRight = true
-                    for(i in ((x+1)..6)){
+                    for (i in ((x + 1)..6)) {
                         println(i.toString())
-                        if(board[y][i].piece != null){
-                            println("r"+i.toString())
+                        if (board[y][i].piece != null) {
+                            println("r" + i.toString())
                             possibleRight = false
                             break
-                        }
-                        else{
-                            if(checkForControl(board[y][i])){
-                                println("1r"+i.toString())
+                        } else {
+                            if (checkForControl(board[y][i])) {
+                                println("1r" + i.toString())
                                 possibleRight = false
                                 break
                             }
                         }
                     }
-                    if(possibleRight){
-                        possibleMoves.add(board[y][x+2])
+                    if (possibleRight) {
+                        possibleMoves.add(board[y][x + 2])
                     }
                 }
             }
         }
-        for (t in possibleMoves) {
-            t.possibleMove = true
-            t.update()
-        }
+        return possibleMoves
 
-    }
-
-    override fun getChar(): Char {
-        return 'K'
     }
 }
 
@@ -717,7 +1101,7 @@ class Queen(
         playerControlled, moveStack
     ) {
 
-    override fun select() {
+    override fun selectNoCheck() {
         val x = tile.x
         val y = tile.y
         for (i in 1..6) {
@@ -870,6 +1254,247 @@ class Queen(
         return 'Q'
     }
 
+    override fun getPossibleMoves(): ArrayList<GameActivity.Tile> {
+
+        val x = tile.x
+        val y = tile.y
+        val possibleMoves = ArrayList<GameActivity.Tile>()
+        for (i in 1..6) {
+            try {
+                if (board[y + i][x + i].piece != null) {
+                    if (board[y + i][x + i].piece!!.playerControlled != playerControlled) {
+                        val p = board[y + i][x + i].piece
+                        board[y + i][x + i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y + i][x + i])
+                        }
+                        board[y + i][x + i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y + i][x + i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y + i][x + i])
+                    }
+                    board[y + i][x + i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y + i][x - i].piece != null) {
+                    if (board[y + i][x - i].piece!!.playerControlled != playerControlled) {
+                        val p = board[y + i][x - i].piece
+                        board[y + i][x - i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y + i][x - i])
+                        }
+                        board[y + i][x - i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y + i][x - i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y + i][x - i])
+                    }
+                    board[y + i][x - i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y - i][x + i].piece != null) {
+                    if (board[y - i][x + i].piece!!.playerControlled != playerControlled) {
+                        val p = board[y - i][x + i].piece
+                        board[y - i][x + i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y - i][x + i])
+                        }
+                        board[y - i][x + i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y - i][x + i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y - i][x + i])
+                    }
+                    board[y - i][x + i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y - i][x - i].piece != null) {
+                    if (board[y - i][x - i].piece!!.playerControlled != playerControlled) {
+                        val p = board[y - i][x - i].piece
+                        board[y - i][x - i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y - i][x - i])
+                        }
+                        board[y - i][x - i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y - i][x - i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y - i][x - i])
+                    }
+                    board[y - i][x - i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y][x + i].piece != null) {
+                    if (board[y][x + i].piece!!.playerControlled != playerControlled) {
+                        var p = board[y][x + i].piece
+                        board[y][x + i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y][x + i])
+                        }
+                        board[y][x + i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y][x + i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y][x + i])
+                    }
+                    board[y][x + i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y][x - i].piece != null) {
+                    if (board[y][x - i].piece!!.playerControlled != playerControlled) {
+                        var p = board[y][x - i].piece
+                        board[y][x - i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y][x - i])
+                        }
+                        board[y][x - i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y][x - i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y][x - i])
+                    }
+                    board[y][x - i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y - i][x].piece != null) {
+                    if (board[y - i][x].piece!!.playerControlled != playerControlled) {
+                        var p = board[y - i][x].piece
+                        board[y - i][x].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y - i][x])
+                        }
+                        board[y - i][x].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y - i][x].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y - i][x])
+                    }
+                    board[y - i][x].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y + i][x].piece != null) {
+                    if (board[y + i][x].piece!!.playerControlled != playerControlled) {
+                        var p = board[y + i][x].piece
+                        board[y + i][x].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y + i][x])
+                        }
+                        board[y + i][x].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y + i][x].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y + i][x])
+                    }
+                    board[y + i][x].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        return possibleMoves
+
+    }
+
 }
 
 class Rook(
@@ -889,7 +1514,7 @@ class Rook(
         super.move(t)
     }
 
-    override fun select() {
+    override fun selectNoCheck() {
         val x = tile.x
         val y = tile.y
         for (i in 1..6) {
@@ -968,6 +1593,129 @@ class Rook(
 
     override fun getChar(): Char {
         return 'R'
+    }
+
+    override fun getPossibleMoves(): ArrayList<GameActivity.Tile> {
+        val x = tile.x
+        val y = tile.y
+        val possibleMoves = ArrayList<GameActivity.Tile>()
+        for (i in 1..6) {
+            try {
+                if (board[y][x + i].piece != null) {
+                    if (board[y][x + i].piece!!.playerControlled != playerControlled) {
+                        var p = board[y][x + i].piece
+                        board[y][x + i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y][x + i])
+                        }
+                        board[y][x + i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y][x + i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y][x + i])
+                    }
+                    board[y][x + i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y][x - i].piece != null) {
+                    if (board[y][x - i].piece!!.playerControlled != playerControlled) {
+                        var p = board[y][x - i].piece
+                        board[y][x - i].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y][x - i])
+                        }
+                        board[y][x - i].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y][x - i].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y][x - i])
+                    }
+                    board[y][x - i].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y - i][x].piece != null) {
+                    if (board[y - i][x].piece!!.playerControlled != playerControlled) {
+                        var p = board[y - i][x].piece
+                        board[y - i][x].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y - i][x])
+                        }
+                        board[y - i][x].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y - i][x].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y - i][x])
+                    }
+                    board[y - i][x].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        for (i in 1..6) {
+            try {
+                if (board[y + i][x].piece != null) {
+                    if (board[y + i][x].piece!!.playerControlled != playerControlled) {
+                        var p = board[y + i][x].piece
+                        board[y + i][x].piece = this
+                        this.tile.piece = null
+                        if (!checkForCheck(true)) {
+                            possibleMoves.add(board[y + i][x])
+                        }
+                        board[y + i][x].piece = p
+                        this.tile.piece = this
+                        break
+                    } else {
+                        break
+                    }
+                } else {
+                    board[y + i][x].piece = this
+                    this.tile.piece = null
+                    if (!checkForCheck(true)) {
+                        possibleMoves.add(board[y + i][x])
+                    }
+                    board[y + i][x].piece = null
+                    this.tile.piece = this
+                }
+            } catch (e: Exception) {
+                break
+            }
+        }
+        return possibleMoves
     }
 
 }

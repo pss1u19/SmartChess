@@ -1,15 +1,13 @@
 package com.example.smartchess
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import java.util.*
-import kotlin.math.abs
-
 class GameActivity : AppCompatActivity() {
     lateinit var board: Array<Array<Tile>>
     val moveStack = Stack<Move>()
@@ -17,10 +15,13 @@ class GameActivity : AppCompatActivity() {
     var selected: Tile? = null
     lateinit var promotionSelector: Spinner
     var won = false
+    //val boardEng = Board()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
         promotionSelector = findViewById(R.id.promotionSpinner)
+        //boardEng.startPosition()
         ArrayAdapter.createFromResource(
             this,
             R.array.pieces,
@@ -43,24 +44,7 @@ class GameActivity : AppCompatActivity() {
                 }
                 if (moveStackSize > 1) {
                     for (i in 0..1) {
-                        val lastMove = moveStack.pop()
-                        lastMove.piece.tile.piece = null
-                        lastMove.piece.tile = lastMove.startTile
-                        lastMove.startTile.piece = lastMove.piece
-                        if (lastMove.piece is Pawn) if ((lastMove.piece as Pawn).hasMoved && abs(
-                                lastMove.startTile.y - lastMove.newTile.y
-                            ) == 2
-                        ) (lastMove.piece as Pawn).hasMoved = false
-                        if (lastMove.takingMove) {
-                            if (lastMove.castling) {
-                                lastMove.takenPiece!!.tile.piece = null
-                                lastMove.castlingTile!!.piece = lastMove.takenPiece
-                                lastMove.takenPiece!!.tile= lastMove.castlingTile!!
-                            } else {
-                                lastMove.takenPiece!!.tile.piece = lastMove.takenPiece
-                            }
-                        }
-                        lastMove.piece.deselectPossibleMoves(true)
+                        moveStack.peek().piece.undo()
                     }
                     updateMoveDisplay()
                 }
