@@ -16,10 +16,10 @@ abstract class Piece(
         lastMove.piece.tile.piece = null
         lastMove.piece.tile = lastMove.startTile
         lastMove.startTile.piece = lastMove.piece
-        if (lastMove.piece is Pawn) if ((lastMove.piece as Pawn).hasMoved && Math.abs(
+        if (lastMove.piece is Pawn) if (lastMove.piece.hasMoved && Math.abs(
                 lastMove.startTile.y - lastMove.newTile.y
             ) == 2
-        ) (lastMove.piece as Pawn).hasMoved = false
+        ) lastMove.piece.hasMoved = false
         if (lastMove.takingMove) {
             if (lastMove.castling) {
                 lastMove.takenPiece!!.tile.piece = null

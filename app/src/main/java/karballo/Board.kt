@@ -5,6 +5,8 @@ import karballo.bitboard.BitboardAttacks
 import karballo.bitboard.BitboardUtils
 import karballo.hash.ZobristKey
 import karballo.util.Utils
+import java.util.*
+import kotlin.collections.HashMap
 import kotlin.math.max
 
 /**
@@ -87,7 +89,7 @@ class Board {
             }
         }
 
-        fen = oSB.toString().toLowerCase() + "/pppppppp/8/8/8/8/PPPPPPPP/" + oSB.toString() + " w KQkq - 0 1"
+        fen = oSB.toString().lowercase(Locale.getDefault()) + "/pppppppp/8/8/8/8/PPPPPPPP/" + oSB.toString() + " w KQkq - 0 1"
         chess960 = true
     }
 
@@ -255,7 +257,7 @@ class Board {
             whites = whites and square.inv()
             blacks = blacks and square.inv()
             return
-        } else if (piece == piece.toLowerCase()) {
+        } else if (piece == piece.lowercaseChar()) {
             whites = whites and square.inv()
             blacks = blacks or square
         } else {
@@ -263,7 +265,7 @@ class Board {
             blacks = blacks and square.inv()
         }
 
-        when (piece.toLowerCase()) {
+        when (piece.lowercaseChar()) {
             'p' -> pawns = pawns or square
             'q' -> queens = queens or square
             'r' -> rooks = rooks or square
@@ -365,14 +367,14 @@ class Board {
                 }
 
                 for (k in 0..(if (number == 0) 1 else number) - 1) {
-                    tmpWhites = tmpWhites and j.inv() or if (number == 0 && p == p.toUpperCase()) j else 0
-                    tmpBlacks = tmpBlacks and j.inv() or if (number == 0 && p == p.toLowerCase()) j else 0
-                    tmpPawns = tmpPawns and j.inv() or if (p.toUpperCase() == 'P') j else 0
-                    tmpRooks = tmpRooks and j.inv() or if (p.toUpperCase() == 'R') j else 0
-                    tmpQueens = tmpQueens and j.inv() or if (p.toUpperCase() == 'Q') j else 0
-                    tmpBishops = tmpBishops and j.inv() or if (p.toUpperCase() == 'B') j else 0
-                    tmpKnights = tmpKnights and j.inv() or if (p.toUpperCase() == 'N') j else 0
-                    tmpKings = tmpKings and j.inv() or if (p.toUpperCase() == 'K') j else 0
+                    tmpWhites = tmpWhites and j.inv() or if (number == 0 && p == p.uppercaseChar()) j else 0
+                    tmpBlacks = tmpBlacks and j.inv() or if (number == 0 && p == p.lowercaseChar()) j else 0
+                    tmpPawns = tmpPawns and j.inv() or if (p.uppercaseChar() == 'P') j else 0
+                    tmpRooks = tmpRooks and j.inv() or if (p.uppercaseChar() == 'R') j else 0
+                    tmpQueens = tmpQueens and j.inv() or if (p.uppercaseChar() == 'Q') j else 0
+                    tmpBishops = tmpBishops and j.inv() or if (p.uppercaseChar() == 'B') j else 0
+                    tmpKnights = tmpKnights and j.inv() or if (p.uppercaseChar() == 'N') j else 0
+                    tmpKings = tmpKings and j.inv() or if (p.uppercaseChar() == 'K') j else 0
                     j = j ushr 1
                     if (j == 0L) {
                         break // security

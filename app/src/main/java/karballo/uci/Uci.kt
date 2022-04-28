@@ -8,6 +8,7 @@ import karballo.search.SearchObserver
 import karballo.search.SearchParameters
 import karballo.search.SearchStatusInfo
 import karballo.util.Utils
+import java.util.*
 
 /**
  * UCI Interface
@@ -31,7 +32,7 @@ class Uci : SearchObserver {
     fun processLine(line: String) {
         val tokens = line.split(" ".toRegex()).dropLastWhile(String::isEmpty).toTypedArray()
         var index = 0
-        val command = tokens[index++].toLowerCase()
+        val command = tokens[index++].lowercase(Locale.getDefault())
 
         if ("uci" == command) {
             println("id name " + NAME)

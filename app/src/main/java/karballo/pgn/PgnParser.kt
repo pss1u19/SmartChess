@@ -1,5 +1,8 @@
 package karballo.pgn
 
+import java.util.*
+import kotlin.collections.ArrayList
+
 /**
  * Pgn parser wit variations support
 
@@ -33,7 +36,8 @@ object PgnParser {
                 if ("" != line.trim({ it <= ' ' })) {
                     if (parsingHeaders && line.indexOf("[") == 0) {
                         // It is a header
-                        val headerName = line.substring(1, line.indexOf("\"")).trim({ it <= ' ' }).toLowerCase()
+                        val headerName = line.substring(1, line.indexOf("\"")).trim({ it <= ' ' })
+                            .lowercase(Locale.getDefault())
                         val headerValue = line.substring(line.indexOf("\"") + 1, line.lastIndexOf("\""))
 
                         if ("" != headerValue && "?" != headerValue && "-" != headerValue) {

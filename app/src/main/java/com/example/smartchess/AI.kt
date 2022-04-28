@@ -124,8 +124,6 @@ class AI(name: String) {
     fun convertStrBoardToArray(boardString: String): FloatArray {
         val array = ArrayList<Float>()
         val b = boardString.split("\n")
-        var i = 0
-        var j = 0
         for (line in b) {
             for (c in line) {
                 when (c) {
@@ -165,11 +163,11 @@ class AI(name: String) {
                     'K' -> {
                         array.addAll(whiteKing)
                     }
+                    '.' -> {
+                        array.addAll(empty)
+                    }
                 }
-                j++
             }
-            j = 0
-            i++
         }
         return array.toFloatArray()
     }
@@ -281,7 +279,7 @@ abstract class AIPiece(
         lastMove.piece.tile.piece = null
         lastMove.piece.tile = lastMove.startTile
         lastMove.startTile.piece = lastMove.piece
-        if (lastMove.piece is AIPawn) if ((lastMove.piece as AIPawn).hasMoved && Math.abs(
+        if (lastMove.piece is AIPawn) if (lastMove.piece.hasMoved && Math.abs(
                 lastMove.startTile.y - lastMove.newTile.y
             ) == 2
         ) (lastMove.piece as Pawn).hasMoved = false
