@@ -7,7 +7,17 @@ import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import karballo.Board
+import karballo.Config
+import karballo.Move
+import karballo.book.FileBook
+import karballo.search.SearchEngine
+import karballo.search.SearchParameters
+import karballo.searchEngineBuilder
+import karballo.util.JvmPlatformUtils
+import karballo.util.Utils
 import java.util.*
+
 class GameActivity : AppCompatActivity() {
     lateinit var board: Array<Array<Tile>>
     val moveStack = Stack<Move>()
@@ -15,13 +25,41 @@ class GameActivity : AppCompatActivity() {
     var selected: Tile? = null
     lateinit var promotionSelector: Spinner
     var won = false
-    //val boardEng = Board()
+    lateinit var boardEng: Board
+    lateinit var search: SearchEngine
+    var hasAi = false
+    lateinit var AiNN: AI
+    var aiNoLoad = false
+    var PlayerIsWhite: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
+
         promotionSelector = findViewById(R.id.promotionSpinner)
-        //boardEng.startPosition()
+
+
+        Utils.instance = JvmPlatformUtils()
+        boardEng = Board()
+        boardEng.startPosition()
+        val config = Config()
+        config.book = FileBook("/book_small.bin")
+        val searchParam = SearchParameters()
+        searchParam.depth = 8
+        search = searchEngineBuilder(config)
+        PlayerIsWhite = !(intent.extras?.get("Colour") as Boolean)
+        val AIid = intent.extras?.get("AI") as Int
+        if (AIid != 0) {
+            try {
+                AiNN = AI("ai" + AIid)
+                AiNN.load()
+                hasAi = true
+            } catch (e: Error) {aiNoLoad = true
+            } catch (e: Exception) {
+            }
+        }
+
+
         ArrayAdapter.createFromResource(
             this,
             R.array.pieces,
@@ -45,6 +83,7 @@ class GameActivity : AppCompatActivity() {
                 if (moveStackSize > 1) {
                     for (i in 0..1) {
                         moveStack.peek().piece.undo()
+                        boardEng.undoMove()
                     }
                     updateMoveDisplay()
                 }
@@ -53,6 +92,15 @@ class GameActivity : AppCompatActivity() {
         assignTiles()
         placePieces()
         assignClickListener()
+        if (PlayerIsWhite && hasAi) {
+            val aimove = AiNN.GetBestMove(boardEng, !PlayerIsWhite)
+            boardEng.doMoves(aimove.second)
+            val startColumn = (aimove.second[0] - 'a').toInt()
+            val startLine = (aimove.second[1] + "").toInt() - 1
+            val endColumn = (aimove.second[2] - 'a').toInt()
+            val endLine = (aimove.second[3] + "").toInt() - 1
+            board[startLine][startColumn].piece?.move(board[endLine][endColumn])
+        }
     }
 
     fun updateMoveDisplay() {
@@ -68,8 +116,7 @@ class GameActivity : AppCompatActivity() {
     }
 
     fun placePieces() {
-        val isWhite = !(intent.extras?.get("Colour") as Boolean)
-        if (isWhite) {
+        if (PlayerIsWhite) {
             board[0][0].piece =
                 Rook(R.drawable.white_rook, board[0][0], board, true, moveStack)
             board[0][7].piece =
@@ -199,12 +246,12 @@ class GameActivity : AppCompatActivity() {
                             null -> {
                                 if (tile!!.piece != null) {
                                     if (moveStack.isEmpty()) {
-                                        if (tile.piece!!.playerControlled != intent.extras!!.get("Colour") as Boolean) {
+                                        if (tile.piece!!.playerControlled != PlayerIsWhite) {
                                             tile.select()
                                             selected = tile
                                             selected!!.update()
                                         }
-                                    } else if (moveStack.peek().piece.playerControlled != tile.piece!!.playerControlled) {
+                                    } else if ((tile.piece!!.playerControlled && hasAi) || (moveStack.peek().piece.playerControlled != tile.piece!!.playerControlled)) {
                                         tile.select()
                                         selected = tile
                                         selected!!.update()
@@ -214,6 +261,10 @@ class GameActivity : AppCompatActivity() {
                             else -> {
                                 if (tile?.possibleMove == true) {
                                     selected!!.piece?.move(tile)
+                                    val lastmove = moveStack.peek()
+                                    val Line = lastmove.startTile.y + 1
+                                    val Column = 'a'.plus(lastmove.startTile.x)
+                                    boardEng.doMoves("" + Column + Line + ('a'.plus(tile.x)) + (tile.y + 1))
                                     selected!!.deselect()
                                     selected = null
                                     updateMoveDisplay()
@@ -237,6 +288,31 @@ class GameActivity : AppCompatActivity() {
                                             }
                                         }
                                     }
+                                    if (hasAi&&!aiNoLoad) {
+                                        val aimove = AiNN.GetBestMove(boardEng, !PlayerIsWhite)
+                                        boardEng.doMoves(aimove.second)
+                                        val startColumn = (aimove.second[0] - 'a').toInt()
+                                        val startLine = (aimove.second[1] + "").toInt() - 1
+                                        val endColumn = (aimove.second[2] - 'a').toInt()
+                                        val endLine = (aimove.second[3] + "").toInt() - 1
+                                        board[startLine][startColumn].piece?.move(board[endLine][endColumn])
+                                    }else if(hasAi){
+                                        val searchParameters = SearchParameters()
+                                        searchParameters.depth = 9
+                                        search.board.initialFen = boardEng.initialFen
+                                        search.board.doMoves(boardEng.moves)
+                                        search.go(searchParameters)
+                                        val move = karballo.Move.toString(search.bestMove)
+                                        val startColumn = (move[0] - 'a').toInt()
+                                        val startLine = (move[1] + "").toInt() - 1
+                                        val endColumn = (move[2] - 'a').toInt()
+                                        val endLine = (move[3] + "").toInt() - 1
+                                        board[startLine][startColumn].piece?.move(board[endLine][endColumn])
+                                    }
+                                    moveStack.peek().piece.deselectPossibleMoves(true)
+
+
+
                                 } else {
                                     selected!!.deselect()
                                     selected = null
