@@ -54,7 +54,7 @@ class AI(name: String) {
             Dense(1, activation = Activations.Tanh)
         )
 
-        model.compile(Adam(),Losses.MSE,Metrics.ACCURACY)
+        model.compile(Adam(), Losses.MSE, Metrics.ACCURACY)
     }
 
     fun save() {
@@ -65,7 +65,7 @@ class AI(name: String) {
 
     fun load() {
         model = TensorFlowInferenceModel.load(File("models/$name")) as Sequential
-        model.compile(Adam(),Losses.MSE,Metrics.ACCURACY)
+        model.compile(Adam(), Losses.MSE, Metrics.ACCURACY)
     }
 
     init {
@@ -92,7 +92,7 @@ class AI(name: String) {
                 if (!searchEngine.isSearching) {
                     board.doMove(searchEngine.bestMove)
                     searchEngine.board.fen = board.initialFen
-                    val compMove = GetBestMove(board,false)
+                    val compMove = GetBestMove(board, false)
                     board.doMoves(compMove.second)
                     trainingArrayList.add(convertStrBoardToArray(board.toString()))
                     answers.add(compMove.first)
@@ -101,8 +101,10 @@ class AI(name: String) {
                     break
                 }
             }
-            if (searchEngine.board.isMate||searchEngine.board.isDraw) {
-                if(!board.turn){aiwon = true}
+            if (searchEngine.board.isMate || searchEngine.board.isDraw) {
+                if (!board.turn) {
+                    aiwon = true
+                }
                 println(board.toString())
                 println(board.moves)
                 println(i.toString())
@@ -110,25 +112,34 @@ class AI(name: String) {
             }
             println(board.toString())
         }
-        if(!aiwon){
-            try{
-            for(i in 0..answers.size){
-                answers[i] = answers[i]+adjustment
-            }}catch (e:Exception){}
+        if (!aiwon) {
+            try {
+                for (i in 0..answers.size) {
+                    answers[i] = answers[i] + adjustment
+                }
+            } catch (e: Exception) {
+            }
+        } else {
+            try {
+                for (i in 0..answers.size) {
+                    answers[i] = answers[i] - adjustment
+                }
+            } catch (e: Exception) {
+            }
         }
-        var trainingArray = Array(trainingArrayList.size){ i->trainingArrayList[i]}
-        var trainingAnswers = FloatArray(answers.size){ i->answers[i]}
-        var trainingDataset = OnHeapDataset.create(trainingArray,trainingAnswers)
+        var trainingArray = Array(trainingArrayList.size) { i -> trainingArrayList[i] }
+        var trainingAnswers = FloatArray(answers.size) { i -> answers[i] }
+        var trainingDataset = OnHeapDataset.create(trainingArray, trainingAnswers)
 
         model.fit(trainingDataset)
 
         board.startPosition()
         searchEngine.board.fen = board.initialFen
-         trainingArrayList = ArrayList<FloatArray>()
-         answers = ArrayList<Float>()
-         aiwon = false
-         adjustment = 0.05f
-        val compMove = GetBestMove(board,false)
+        trainingArrayList = ArrayList<FloatArray>()
+        answers = ArrayList<Float>()
+        aiwon = false
+        adjustment = 0.05f
+        val compMove = GetBestMove(board, false)
         board.doMoves(compMove.second)
         trainingArrayList.add(convertStrBoardToArray(board.toString()))
         answers.add(compMove.first)
@@ -139,7 +150,7 @@ class AI(name: String) {
                 if (!searchEngine.isSearching) {
                     board.doMove(searchEngine.bestMove)
                     searchEngine.board.fen = board.initialFen
-                    val compMove = GetBestMove(board,false)
+                    val compMove = GetBestMove(board, false)
                     board.doMoves(compMove.second)
                     trainingArrayList.add(convertStrBoardToArray(board.toString()))
                     answers.add(compMove.first)
@@ -148,8 +159,10 @@ class AI(name: String) {
                     break
                 }
             }
-            if (searchEngine.board.isMate||searchEngine.board.isDraw) {
-                if(!board.turn){aiwon = false}
+            if (searchEngine.board.isMate || searchEngine.board.isDraw) {
+                if (!board.turn) {
+                    aiwon = false
+                }
                 println(board.toString())
                 println(board.moves)
                 println(i.toString())
@@ -157,15 +170,24 @@ class AI(name: String) {
             }
             println(board.toString())
         }
-        if(!aiwon){
-            try{
-                for(i in 0..answers.size){
-                    answers[i] = answers[i]+adjustment
-                }}catch (e:Exception){}
+        if (!aiwon) {
+            try {
+                for (i in 0..answers.size) {
+                    answers[i] = answers[i] - adjustment
+                }
+            } catch (e: Exception) {
+            }
+        } else {
+            try {
+                for (i in 0..answers.size) {
+                    answers[i] = answers[i] + adjustment
+                }
+            } catch (e: Exception) {
+            }
         }
-         trainingArray = Array(trainingArrayList.size){i->trainingArrayList[i]}
-         trainingAnswers = FloatArray(answers.size){i->answers[i]}
-         trainingDataset = OnHeapDataset.create(trainingArray,trainingAnswers)
+        trainingArray = Array(trainingArrayList.size) { i -> trainingArrayList[i] }
+        trainingAnswers = FloatArray(answers.size) { i -> answers[i] }
+        trainingDataset = OnHeapDataset.create(trainingArray, trainingAnswers)
 
         model.fit(trainingDataset)
 
@@ -252,7 +274,7 @@ class AI(name: String) {
         while (moves[i] != 0) {
             currentBoard.doMove(currentBoard.legalMoves[i])
 
-            val res = Pair(eval(currentBoard),Move.toString(moves[i]))
+            val res = Pair(eval(currentBoard), Move.toString(moves[i]))
             if (res.first > maxEval) {
                 maxEval = res.first
                 maxStr = Move.toString(moves[i])

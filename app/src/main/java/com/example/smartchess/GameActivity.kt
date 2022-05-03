@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
 import karballo.Board
 import karballo.Config
 import karballo.Move
@@ -48,14 +49,17 @@ class GameActivity : AppCompatActivity() {
         searchParam.depth = 8
         search = searchEngineBuilder(config)
         PlayerIsWhite = !(intent.extras?.get("Colour") as Boolean)
-        val AIid = intent.extras?.get("AI") as Int
-        if (AIid != 0) {
+        val AIid = intent.extras?.get("AI").toString()
+        if (AIid != "0") {
             try {
+                hasAi = true
                 AiNN = AI("ai" + AIid)
                 AiNN.load()
-                hasAi = true
-            } catch (e: Error) {aiNoLoad = true
+
+            } catch (e: Error) {
+                aiNoLoad = true
             } catch (e: Exception) {
+                aiNoLoad = true
             }
         }
 
@@ -81,10 +85,9 @@ class GameActivity : AppCompatActivity() {
                     selected = null
                 }
                 if (moveStackSize > 1) {
-                    for (i in 0..1) {
-                        moveStack.peek().piece.undo()
-                        boardEng.undoMove()
-                    }
+                    moveStack.peek().piece.undo()
+                    moveStack.peek().piece.undo()
+                    boardEng.undoMove(boardEng.moveNumber-2)
                     updateMoveDisplay()
                 }
             }
@@ -92,7 +95,7 @@ class GameActivity : AppCompatActivity() {
         assignTiles()
         placePieces()
         assignClickListener()
-        if (PlayerIsWhite && hasAi) {
+        if (!PlayerIsWhite && hasAi && !aiNoLoad) {
             val aimove = AiNN.GetBestMove(boardEng, !PlayerIsWhite)
             boardEng.doMoves(aimove.second)
             val startColumn = (aimove.second[0] - 'a').toInt()
@@ -246,7 +249,7 @@ class GameActivity : AppCompatActivity() {
                             null -> {
                                 if (tile!!.piece != null) {
                                     if (moveStack.isEmpty()) {
-                                        if (tile.piece!!.playerControlled != PlayerIsWhite) {
+                                        if (tile.piece!!.playerControlled == PlayerIsWhite) {
                                             tile.select()
                                             selected = tile
                                             selected!!.update()
@@ -264,10 +267,11 @@ class GameActivity : AppCompatActivity() {
                                     val lastmove = moveStack.peek()
                                     val Line = lastmove.startTile.y + 1
                                     val Column = 'a'.plus(lastmove.startTile.x)
-                                    boardEng.doMoves("" + Column + Line + ('a'.plus(tile.x)) + (tile.y + 1))
+                                    if(hasAi)boardEng.doMoves("" + Column + Line + ('a'.plus(tile.x)) + (tile.y + 1))
                                     selected!!.deselect()
                                     selected = null
                                     updateMoveDisplay()
+                                    tile.piece?.deselectPossibleMoves(true)
                                     if (moveStack.peek().takingMove) {
                                         val piece = moveStack.peek().takenPiece
                                         if (piece is King) {
@@ -288,29 +292,68 @@ class GameActivity : AppCompatActivity() {
                                             }
                                         }
                                     }
-                                    if (hasAi&&!aiNoLoad) {
+                                    if (hasAi && !aiNoLoad) {
                                         val aimove = AiNN.GetBestMove(boardEng, !PlayerIsWhite)
                                         boardEng.doMoves(aimove.second)
                                         val startColumn = (aimove.second[0] - 'a').toInt()
                                         val startLine = (aimove.second[1] + "").toInt() - 1
                                         val endColumn = (aimove.second[2] - 'a').toInt()
                                         val endLine = (aimove.second[3] + "").toInt() - 1
+                                        if (aimove.second.length == 5) {
+                                            when (aimove.second[4]) {
+                                                'q' -> promotionSelector.setSelection(
+                                                    promotionSelector.get(0).id
+                                                )
+                                                'b' -> promotionSelector.setSelection(
+                                                    promotionSelector.get(1).id
+                                                )
+                                                'n' -> promotionSelector.setSelection(
+                                                    promotionSelector.get(2).id
+                                                )
+                                                'r' -> promotionSelector.setSelection(
+                                                    promotionSelector.get(3).id
+                                                )
+
+                                            }
+                                        }
                                         board[startLine][startColumn].piece?.move(board[endLine][endColumn])
-                                    }else if(hasAi){
+
+                                    } else if (hasAi) {
                                         val searchParameters = SearchParameters()
                                         searchParameters.depth = 9
                                         search.board.initialFen = boardEng.initialFen
                                         search.board.doMoves(boardEng.moves)
                                         search.go(searchParameters)
+                                        while (true) {
+                                            if (!search.isSearching) break
+                                        }
                                         val move = karballo.Move.toString(search.bestMove)
                                         val startColumn = (move[0] - 'a').toInt()
                                         val startLine = (move[1] + "").toInt() - 1
                                         val endColumn = (move[2] - 'a').toInt()
                                         val endLine = (move[3] + "").toInt() - 1
+                                        if (move.length == 5) {
+                                            when (move[4]) {
+                                                'q' -> promotionSelector.setSelection(
+                                                    promotionSelector.get(0).id
+                                                )
+                                                'b' -> promotionSelector.setSelection(
+                                                    promotionSelector.get(1).id
+                                                )
+                                                'n' -> promotionSelector.setSelection(
+                                                    promotionSelector.get(2).id
+                                                )
+                                                'r' -> promotionSelector.setSelection(
+                                                    promotionSelector.get(3).id
+                                                )
+
+                                            }
+                                        }
+                                        boardEng.doMoves(move)
                                         board[startLine][startColumn].piece?.move(board[endLine][endColumn])
+                                        board[endLine][endColumn].piece?.deselectPossibleMoves(true)
                                     }
                                     moveStack.peek().piece.deselectPossibleMoves(true)
-
 
 
                                 } else {

@@ -11,46 +11,74 @@ abstract class Piece(
     val playerControlled: Boolean,
     val moveStack: Stack<GameActivity.Move>,
 ) {
-    fun undo(){
+    fun undo() {
         val lastMove = this.moveStack.pop()
         lastMove.piece.tile.piece = null
         lastMove.piece.tile = lastMove.startTile
         lastMove.startTile.piece = lastMove.piece
-        if (lastMove.piece is Pawn) if (lastMove.piece.hasMoved && Math.abs(
-                lastMove.startTile.y - lastMove.newTile.y
-            ) == 2
-        ) lastMove.piece.hasMoved = false
+        if (lastMove.piece is Pawn) if (lastMove.piece.playerControlled && lastMove.startTile.y == 1 || !lastMove.piece.playerControlled && lastMove.startTile.y == 6) lastMove.piece.hasMoved =
+            false
+
         if (lastMove.takingMove) {
             if (lastMove.castling) {
                 lastMove.takenPiece!!.tile.piece = null
                 lastMove.castlingTile!!.piece = lastMove.takenPiece
                 lastMove.takenPiece!!.tile = lastMove.castlingTile!!
+                (lastMove.piece as King).hasMoved = false
+                (lastMove.takenPiece as Rook).hasMoved = false
             } else {
                 lastMove.takenPiece!!.tile.piece = lastMove.takenPiece
             }
         }
         lastMove.piece.deselectPossibleMoves(true)
     }
+
     open fun move(t: GameActivity.Tile) {
-        if (t.piece != null) {
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t.piece!!,
-                    t,
-                    "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
+        val isWhitePiece =
+            this.graphic == R.drawable.white_pawn || this.graphic == R.drawable.white_bishop || this.graphic == R.drawable.white_king || this.graphic == R.drawable.white_queen || this.graphic == R.drawable.white_knight || this.graphic == R.drawable.white_rook
+        if ((this.playerControlled && isWhitePiece) || (!this.playerControlled && !isWhitePiece)) {
+            if (t.piece != null) {
+                moveStack.push(
+                    GameActivity.Move(
+                        tile,
+                        this,
+                        t.piece!!,
+                        t,
+                        "" + this.getChar() + "x" + ('a'.plus(t.x)) + "" + (t.y + 1).toString()
+                    )
                 )
-            )
+            } else {
+                moveStack.push(
+                    GameActivity.Move(
+                        tile,
+                        this,
+                        t,
+                        "" + this.getChar() + 'a'.plus(t.x) + (t.y + 1).toString()
+                    )
+                )
+            }
+
         } else {
-            moveStack.push(
-                GameActivity.Move(
-                    tile,
-                    this,
-                    t,
-                    "" + this.getChar() + 'a'.plus(t.x) + (t.y + 1).toString()
+            if (t.piece != null) {
+                moveStack.push(
+                    GameActivity.Move(
+                        tile,
+                        this,
+                        t.piece!!,
+                        t,
+                        "" + this.getChar() + "x" + ('h'.minus(t.x)) + "" + (8-t.y ).toString()
+                    )
                 )
-            )
+            } else {
+                moveStack.push(
+                    GameActivity.Move(
+                        tile,
+                        this,
+                        t,
+                        "" + this.getChar() + 'h'.minus(t.x) + (8-t.y).toString()
+                    )
+                )
+            }
         }
         tile.deselect()
         t.piece = this
@@ -220,7 +248,7 @@ class Pawn(
     board: Array<Array<GameActivity.Tile>>,
     playerControlled: Boolean,
     moveStack: Stack<GameActivity.Move>,
-    val promotionSpinner: Spinner
+    val promotionSpinner: Spinner,
 ) :
     Piece(
         graphic, tile, board,
@@ -363,7 +391,10 @@ class Pawn(
     }
 
     override fun getChar(): Char {
-        return 'a'.plus(tile.x)
+        if((this.playerControlled && graphic == R.drawable.white_pawn)||(!this.playerControlled && graphic == R.drawable.black_pawn)){
+            return 'a'.plus(tile.x)
+        }
+        return 'h'.minus(tile.x)
     }
 
     override fun getPossibleMoves(): ArrayList<GameActivity.Tile> {
@@ -467,7 +498,7 @@ class Bishop(
     override fun selectNoCheck() {
         val x = tile.x
         val y = tile.y
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x + i].piece != null) {
                     if (board[y + i][x + i].piece!!.playerControlled != playerControlled) {
@@ -485,7 +516,7 @@ class Bishop(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x - i].piece != null) {
                     if (board[y + i][x - i].piece!!.playerControlled != playerControlled) {
@@ -503,7 +534,7 @@ class Bishop(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x + i].piece != null) {
                     if (board[y - i][x + i].piece!!.playerControlled != playerControlled) {
@@ -521,7 +552,7 @@ class Bishop(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x - i].piece != null) {
                     if (board[y - i][x - i].piece!!.playerControlled != playerControlled) {
@@ -549,7 +580,7 @@ class Bishop(
         val x = tile.x
         val y = tile.y
         val possibleMoves = ArrayList<GameActivity.Tile>()
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x + i].piece != null) {
                     if (board[y + i][x + i].piece!!.playerControlled != playerControlled) {
@@ -578,7 +609,7 @@ class Bishop(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x - i].piece != null) {
                     if (board[y + i][x - i].piece!!.playerControlled != playerControlled) {
@@ -607,7 +638,7 @@ class Bishop(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x + i].piece != null) {
                     if (board[y - i][x + i].piece!!.playerControlled != playerControlled) {
@@ -636,7 +667,7 @@ class Bishop(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x - i].piece != null) {
                     if (board[y - i][x - i].piece!!.playerControlled != playerControlled) {
@@ -1033,7 +1064,7 @@ class King(
                 }
             }
         }
-        if (!this.hasMoved) {
+        if (!this.hasMoved && !checkForCheck(true)) {
             println("a")
             if (board[y][0].piece is Rook) {
                 println("b")
@@ -1104,7 +1135,7 @@ class Queen(
     override fun selectNoCheck() {
         val x = tile.x
         val y = tile.y
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x + i].piece != null) {
                     if (board[y + i][x + i].piece!!.playerControlled != playerControlled) {
@@ -1122,7 +1153,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x - i].piece != null) {
                     if (board[y + i][x - i].piece!!.playerControlled != playerControlled) {
@@ -1140,7 +1171,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x + i].piece != null) {
                     if (board[y - i][x + i].piece!!.playerControlled != playerControlled) {
@@ -1158,7 +1189,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x - i].piece != null) {
                     if (board[y - i][x - i].piece!!.playerControlled != playerControlled) {
@@ -1176,7 +1207,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y][x + i].piece != null) {
                     if (board[y][x + i].piece!!.playerControlled != playerControlled) {
@@ -1194,7 +1225,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y][x - i].piece != null) {
                     if (board[y][x - i].piece!!.playerControlled != playerControlled) {
@@ -1212,7 +1243,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x].piece != null) {
                     if (board[y - i][x].piece!!.playerControlled != playerControlled) {
@@ -1230,7 +1261,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x].piece != null) {
                     if (board[y + i][x].piece!!.playerControlled != playerControlled) {
@@ -1259,7 +1290,7 @@ class Queen(
         val x = tile.x
         val y = tile.y
         val possibleMoves = ArrayList<GameActivity.Tile>()
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x + i].piece != null) {
                     if (board[y + i][x + i].piece!!.playerControlled != playerControlled) {
@@ -1288,7 +1319,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x - i].piece != null) {
                     if (board[y + i][x - i].piece!!.playerControlled != playerControlled) {
@@ -1317,7 +1348,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x + i].piece != null) {
                     if (board[y - i][x + i].piece!!.playerControlled != playerControlled) {
@@ -1346,7 +1377,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x - i].piece != null) {
                     if (board[y - i][x - i].piece!!.playerControlled != playerControlled) {
@@ -1375,7 +1406,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y][x + i].piece != null) {
                     if (board[y][x + i].piece!!.playerControlled != playerControlled) {
@@ -1404,7 +1435,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y][x - i].piece != null) {
                     if (board[y][x - i].piece!!.playerControlled != playerControlled) {
@@ -1433,7 +1464,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x].piece != null) {
                     if (board[y - i][x].piece!!.playerControlled != playerControlled) {
@@ -1462,7 +1493,7 @@ class Queen(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x].piece != null) {
                     if (board[y + i][x].piece!!.playerControlled != playerControlled) {
@@ -1517,7 +1548,7 @@ class Rook(
     override fun selectNoCheck() {
         val x = tile.x
         val y = tile.y
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y][x + i].piece != null) {
                     if (board[y][x + i].piece!!.playerControlled != playerControlled) {
@@ -1535,7 +1566,7 @@ class Rook(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y][x - i].piece != null) {
                     if (board[y][x - i].piece!!.playerControlled != playerControlled) {
@@ -1553,7 +1584,7 @@ class Rook(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x].piece != null) {
                     if (board[y - i][x].piece!!.playerControlled != playerControlled) {
@@ -1571,7 +1602,7 @@ class Rook(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x].piece != null) {
                     if (board[y + i][x].piece!!.playerControlled != playerControlled) {
@@ -1599,7 +1630,7 @@ class Rook(
         val x = tile.x
         val y = tile.y
         val possibleMoves = ArrayList<GameActivity.Tile>()
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y][x + i].piece != null) {
                     if (board[y][x + i].piece!!.playerControlled != playerControlled) {
@@ -1628,7 +1659,7 @@ class Rook(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y][x - i].piece != null) {
                     if (board[y][x - i].piece!!.playerControlled != playerControlled) {
@@ -1657,7 +1688,7 @@ class Rook(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y - i][x].piece != null) {
                     if (board[y - i][x].piece!!.playerControlled != playerControlled) {
@@ -1686,7 +1717,7 @@ class Rook(
                 break
             }
         }
-        for (i in 1..6) {
+        for (i in 1..7) {
             try {
                 if (board[y + i][x].piece != null) {
                     if (board[y + i][x].piece!!.playerControlled != playerControlled) {

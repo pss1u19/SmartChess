@@ -23,8 +23,8 @@ class SelectActivity : AppCompatActivity() {
                 ai1.newModel()
             } catch (e: Error) {
             }
+        } catch (e: Exception) {
         }
-        catch(e:Exception){}
         val ai2 = AI("ai2")
         try {
             ai2.load()
@@ -33,7 +33,8 @@ class SelectActivity : AppCompatActivity() {
                 ai2.newModel()
             } catch (e: Error) {
             }
-        }catch(e:Exception){}
+        } catch (e: Exception) {
+        }
         val ai3 = AI("ai3")
         try {
             ai3.load()
@@ -42,7 +43,8 @@ class SelectActivity : AppCompatActivity() {
                 ai3.newModel()
             } catch (e: Error) {
             }
-        }catch(e:Exception){}
+        } catch (e: Exception) {
+        }
         tracker.setOnClickListener {
             if (isTraining) {
                 (it as TextView).setText("Training in progress")
@@ -51,62 +53,86 @@ class SelectActivity : AppCompatActivity() {
             }
         }
         findViewById<Button>(R.id.deleteButton).setOnClickListener {
-            try{
-            ai1.newModel()
-            ai1.save()}catch (e:Exception){}catch (e:Error){}
+            try {
+                ai1.newModel()
+                ai1.save()
+            } catch (e: Exception) {
+            } catch (e: Error) {
+            }
         }
         findViewById<Button>(R.id.deleteButton2).setOnClickListener {
-            try{
+            try {
                 ai2.newModel()
-                ai2.save()}catch (e:Exception){}catch (e:Error){}
+                ai2.save()
+            } catch (e: Exception) {
+            } catch (e: Error) {
+            }
         }
         findViewById<Button>(R.id.deleteButton3).setOnClickListener {
-            try{
+            try {
                 ai3.newModel()
-                ai3.save()}catch (e:Exception){}catch (e:Error){}
+                ai3.save()
+            } catch (e: Exception) {
+            } catch (e: Error) {
+            }
         }
         findViewById<Button>(R.id.trainButton).setOnClickListener {
             try {
                 trainingThread = Thread {
-                    isTraining = true
-                    ai1.train()
-                    isTraining = false
-                    ai1.save()
+                    try {
+                        isTraining = true
+                        ai1.train()
+                        isTraining = false
+                        ai1.save()
+                    } catch (e: Exception) {
+                    } catch (e: Error) {
+                    }
                 }
                 trainingThread.start()
                 tracker.setText("Training in progress")
             } catch (e: Exception) {
-            }catch (e:Error){}
+            } catch (e: Error) {
+            }
 
         }
         findViewById<Button>(R.id.trainButton2).setOnClickListener {
 
             try {
                 trainingThread = Thread({
-                    isTraining = true
-                    ai2.train()
-                    isTraining = false
-                    ai2.save()
+                    try {
+                        isTraining = true
+                        ai2.train()
+                        isTraining = false
+                        ai2.save()
+                    } catch (e: Exception) {
+                    } catch (e: Error) {
+                    }
                 })
                 trainingThread.start()
                 tracker.setText("Training in progress")
             } catch (e: Exception) {
-            }catch (e:Error){}
+            } catch (e: Error) {
+            }
 
         }
         findViewById<Button>(R.id.trainButton3).setOnClickListener {
             try {
                 trainingThread = Thread({
-                    isTraining = true
-                    ai3.train()
-                    isTraining = false
-                    ai3.save()
+                    try {
+                        isTraining = true
+                        ai3.train()
+                        isTraining = false
+                        ai3.save()
+                    } catch (e: Exception) {
+                    } catch (e: Error) {
+                    }
                 })
                 trainingThread.start()
                 tracker.setText("Training in progress")
 
             } catch (e: java.lang.Exception) {
-            }catch (e:Error){}
+            } catch (e: Error) {
+            }
 
         }
 
@@ -116,18 +142,18 @@ class SelectActivity : AppCompatActivity() {
 
                 println(System.nanoTime())
                 val playIntent = Intent(this, GameActivity::class.java)
-                when(checkedButton.text.last()){
-                    'I' ->{
-                        playIntent.putExtra("AI",0)
+                when (checkedButton.text.last()) {
+                    'I' -> {
+                        playIntent.putExtra("AI", 0)
                     }
-                    '1' ->{
-                        playIntent.putExtra("AI",1)
+                    '1' -> {
+                        playIntent.putExtra("AI", 1)
                     }
-                    '2' ->{
-                        playIntent.putExtra("AI",2)
+                    '2' -> {
+                        playIntent.putExtra("AI", 2)
                     }
-                    '3' ->{
-                        playIntent.putExtra("AI",3)
+                    '3' -> {
+                        playIntent.putExtra("AI", 3)
                     }
                 }
                 playIntent.putExtra("Colour", switch.isChecked)
